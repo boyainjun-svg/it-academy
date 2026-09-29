@@ -1,0 +1,137 @@
+{
+  "users": [
+    {
+      "id": "usr_kitsvcadmin",
+      "name": "kitsvcadmin",
+      "email": "kitsvcadmin@itacademy.ac.th",
+      "passwordHash": "7f4a194119ae5bd9f5017c0b8ba525030bf417defda65eaaada5295acd421fc842d32f565ad5db3bffa3f789e0b7865b758b39345b77c9d726ec35c83d4048ff",
+      "salt": "salt_kitsvcadmin",
+      "institution": "ศูนย์เทคโนโลยีสารสนเทศ อาชีวศึกษา",
+      "department": "ฝ่ายบริหารจัดการระบบแอดมินและการสอน",
+      "educationLevel": "ผู้ดูแลระบบสูงสุด (Super Admin)",
+      "isVerified": true,
+      "role": "admin",
+      "createdAt": "2026-09-28T14:00:00.000Z",
+      "updatedAt": "2026-09-28T14:00:00.000Z"
+    },
+    {
+      "id": "user-demo-student",
+      "name": "ธนกฤต ชัยชนะ",
+      "email": "student@itacademy.ac.th",
+      "passwordHash": "c5f85b51433c4a77e1b723537a597e09cc3f7ac393b4cc5473fda1542b668d8efcf4f74ed42bab5f67c9d4c574fdf7be3918a0ae1f8779d6c9d3acadd8743147",
+      "salt": "salt_student",
+      "institution": "วิทยาลัยเทคนิคมีนบุรี",
+      "department": "แผนกช่างเทคนิคคอมพิวเตอร์",
+      "educationLevel": "ปวส. 1",
+      "isVerified": true,
+      "role": "student",
+      "createdAt": "2026-09-28T11:15:00.000Z",
+      "updatedAt": "2026-09-28T11:15:00.000Z"
+    },
+    {
+      "id": "usr_04b4c447-fbc",
+      "name": "ณัฐพล พงษ์ศิริ",
+      "email": "nattapol@technic-cm.ac.th",
+      "passwordHash": "fd921d92164fe08c9b282e1fe2d2e573b07202c24d46a78580f470638ccdaa254952d0ec561b7b2b1a394d3549c0134a7a9d4eb4181d4eb28da817bebc031ec8",
+      "salt": "84e310d37365dc584e5ba9ac6af464eb",
+      "institution": "วิทยาลัยเทคนิคเชียงใหม่",
+      "department": "แผนกวิชาเทคโนโลยีสารสนเทศ",
+      "educationLevel": "ปวช. 1",
+      "isVerified": true,
+      "role": "student",
+      "createdAt": "2026-09-28T12:55:47.371Z",
+      "updatedAt": "2026-09-28T12:55:47.421Z"
+    },
+    {
+      "id": "usr_karn_korat",
+      "name": "กานต์ธิดา รัตนวารี",
+      "email": "kanthida.r@technic-korat.ac.th",
+      "passwordHash": "c5f85b51433c4a77e1b723537a597e09cc3f7ac393b4cc5473fda1542b668d8efcf4f74ed42bab5f67c9d4c574fdf7be3918a0ae1f8779d6c9d3acadd8743147",
+      "salt": "salt_student",
+      "institution": "วิทยาลัยเทคนิคนครราชสีมา",
+      "department": "แผนกวิชาเทคโนโลยีสารสนเทศ",
+      "educationLevel": "ปวช. 2",
+      "isVerified": true,
+      "role": "student",
+      "createdAt": "2026-09-28T13:10:00.000Z",
+      "updatedAt": "2026-09-28T13:10:00.000Z"
+    },
+    {
+      "id": "usr_artit_kk",
+      "name": "อาทิตย์ วงศ์สว่าง",
+      "email": "artit.w@kktech.ac.th",
+      "passwordHash": "c5f85b51433c4a77e1b723537a597e09cc3f7ac393b4cc5473fda1542b668d8efcf4f74ed42bab5f67c9d4c574fdf7be3918a0ae1f8779d6c9d3acadd8743147",
+      "salt": "salt_student",
+      "institution": "วิทยาลัยเทคนิคขอนแก่น",
+      "department": "แผนกช่างอิเล็กทรอนิกส์และ IoT",
+      "educationLevel": "ปวส. 2",
+      "isVerified": false,
+      "role": "student",
+      "createdAt": "2026-09-28T13:40:00.000Z",
+      "updatedAt": "2026-09-28T13:40:00.000Z"
+    },
+    {
+      "id": "usr_patchara_bkk",
+      "name": "พัชรพล ยั่งยืน",
+      "email": "patchara@bkkvoc.ac.th",
+      "passwordHash": "c5f85b51433c4a77e1b723537a597e09cc3f7ac393b4cc5473fda1542b668d8efcf4f74ed42bab5f67c9d4c574fdf7be3918a0ae1f8779d6c9d3acadd8743147",
+      "salt": "salt_student",
+      "institution": "วิทยาลัยอาชีวศึกษาดุสิตพณิชยการ",
+      "department": "แผนกวิชาคอมพิวเตอร์ธุรกิจ",
+      "educationLevel": "ปวช. 3",
+      "isVerified": true,
+      "role": "student",
+      "createdAt": "2026-09-28T13:45:00.000Z",
+      "updatedAt": "2026-09-28T13:45:00.000Z"
+    },
+    {
+      "id": "usr_cccaea4b-758",
+      "name": "พงศกร เมืองประเทศ",
+      "email": "68219010015@svc.ac.th",
+      "passwordHash": "cf493b78d0ba86b9d25746bd1859dd9a2d94c5c534173dc2eafba920eddace9972f4b2a14866f786d4a44cff6367bcc02b3e000bb1fd325dca4d0fe0d8fbfdbb",
+      "salt": "ddb18af2468838b73a77416987201c76",
+      "institution": "วิทยาลัยอาชีวศึกษาสุราษฎร์ธานี",
+      "department": "แผนกวิชาเทคโนโลยีสารสนเทศ (IT)",
+      "educationLevel": "ปวส.",
+      "isVerified": true,
+      "role": "student",
+      "createdAt": "2026-09-28T14:12:51.136Z",
+      "updatedAt": "2026-09-28T14:14:16.790Z"
+    }
+  ],
+  "otps": [
+    {
+      "email": "artit.w@kktech.ac.th",
+      "code": "482910",
+      "expiresAt": 1793199999000,
+      "createdAt": 1793196399000
+    }
+  ],
+  "sessions": [
+    {
+      "token": "sess_14786e37-f799-4a0f-81a4-ae7a4f2bcd54",
+      "userId": "usr_04b4c447-fbc",
+      "expiresAt": 1793192147421
+    },
+    {
+      "token": "sess_5494cae9-996c-4a48-9c1d-5542f1ab0f67",
+      "userId": "usr_cccaea4b-758",
+      "expiresAt": 1793196856790
+    },
+    {
+      "token": "admin_sess_e60a5fac-22bb-4344-8a0c-0afceb377989",
+      "userId": "usr_kitsvcadmin",
+      "expiresAt": 1791211192027
+    },
+    {
+      "token": "admin_sess_8c1de240-ae2d-4a22-a7d6-b9edb3ff89af",
+      "userId": "usr_kitsvcadmin",
+      "expiresAt": 1791211296094
+    },
+    {
+      "token": "admin_sess_abef848f-81f2-468f-8b77-fc57c795b969",
+      "userId": "usr_kitsvcadmin",
+      "expiresAt": 1791265108731
+    }
+  ]
+}

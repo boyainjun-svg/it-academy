@@ -1,0 +1,668 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import {
+  Play,
+  Terminal,
+  Database,
+  Cpu,
+  Smartphone,
+  Shield,
+  Wifi,
+  RotateCcw,
+  CheckCircle2,
+  Table,
+  Layers,
+  Sparkles,
+  Send,
+  Eye,
+  Sliders,
+  ChevronDown,
+} from "lucide-react";
+
+interface LessonResultViewerProps {
+  courseId: string;
+  lessonId: string;
+  code: string;
+  iframeRef?: React.RefObject<HTMLIFrameElement | null>;
+}
+
+function LessonResultViewer({
+  courseId,
+  lessonId,
+  code,
+  iframeRef,
+}: LessonResultViewerProps) {
+  const [activeSubTab, setActiveSubTab] = useState<"table" | "terminal" | "plan">("table");
+
+  // Serial Monitor state (IoT)
+  const [baudRate, setBaudRate] = useState("115200");
+  const [serialInput, setSerialInput] = useState("");
+  const [serialLogs, setSerialLogs] = useState<string[]>([]);
+  const [isStreaming, setIsStreaming] = useState(true);
+
+  // Mobile Simulator state (Flutter)
+  const [mobileTab, setMobileTab] = useState<"home" | "schedule" | "grades">("home");
+  const [cardToggled, setCardToggled] = useState(false);
+
+  // Initialize simulated IoT logs when code changes
+  useEffect(() => {
+    if (courseId === "iot") {
+      const now = new Date().toLocaleTimeString("th-TH");
+      setSerialLogs([
+        `[${now}.012] [BOOT] ESP-IDF v4.4-dev-2311-g634f4b93f / CPU: ESP32 @ 240MHz`,
+        `[${now}.045] [FLASH] 4MB SPI Flash detected, mode: DIO, speed: 80MHz`,
+        `[${now}.230] [WiFi] Initializing WiFi Station Mode...`,
+        `[${now}.580] [WiFi] Connecting to SSID: 'IT_College_SmartLab_5G' ..... Connected!`,
+        `[${now}.890] [WiFi] IP Address: 192.168.1.185 (Subnet: 255.255.255.0)`,
+        `[${now}.120] [MQTT] Connecting to broker.emqx.io:1883 with ClientId: ESP32_Room402`,
+        `[${now}.310] [MQTT] Connection Established! Subscribed to 'college/room402/command'`,
+        `[${now}.500] [DHT22] Sensor Read OK -> Temperature: 28.4 °C | Humidity: 64.2% RH`,
+        `[${now}.720] [MQTT] Published to 'college/room402/telemetry' -> {"temp": 28.4, "hum": 64.2, "relay": "OFF"}`,
+      ]);
+    }
+  }, [courseId, lessonId]);
+
+  const handleSerialSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!serialInput.trim()) return;
+
+    const now = new Date().toLocaleTimeString("th-TH");
+    const cmd = serialInput.trim();
+    const newLogs = [
+      ...serialLogs,
+      `[${now}] >> SEND: ${cmd}`,
+    ];
+
+    if (cmd.toUpperCase() === "RELAY_ON" || cmd.toUpperCase() === "LED_ON") {
+      newLogs.push(`[${now}.105] [GPIO] PIN 23 -> HIGH. Relay Activated! 💡`);
+    } else if (cmd.toUpperCase() === "RELAY_OFF" || cmd.toUpperCase() === "LED_OFF") {
+      newLogs.push(`[${now}.105] [GPIO] PIN 23 -> LOW. Relay Deactivated. ⚪`);
+    } else if (cmd.toUpperCase() === "READ_TEMP") {
+      newLogs.push(`[${now}.150] [DHT22] Temperature: 28.6 °C, Humidity: 63.8% RH`);
+    } else if (cmd.toUpperCase() === "STATUS") {
+      newLogs.push(`[${now}.080] [SYSTEM] ESP32 Online | Uptime: 45 min | Free Heap: 284,120 bytes`);
+    } else {
+      newLogs.push(`[${now}.090] [ECHO] Received: "${cmd}" (Command executed)`);
+    }
+
+    setSerialLogs(newLogs);
+    setSerialInput("");
+  };
+
+  // 1. WEB DEV / GAME DEV: Iframe execution or HTML preview
+  if (courseId === "webdev" || courseId === "gamedev") {
+    return (
+      <div className="w-full h-full flex flex-col bg-white dark:bg-slate-950">
+        <div className="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center justify-between text-xs text-slate-400">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-white font-mono font-bold">
+              {courseId === "gamedev" ? "HTML5 2D Canvas Viewport (60 FPS)" : "Live Web Browser Preview"}
+            </span>
+          </div>
+          <span className="text-[11px] text-slate-400">Sandbox: allow-scripts</span>
+        </div>
+        <div className="flex-grow relative bg-slate-950">
+          <iframe
+            ref={iframeRef as any}
+            className="w-full h-full border-none bg-white"
+            title="Output Preview"
+            sandbox="allow-scripts allow-modals"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // 2. DATABASE / SQL: Realistic Table Grid & Execution Plan
+  if (courseId === "database") {
+    const isExplainQuery =
+      code.toLowerCase().includes("explain") ||
+      code.toLowerCase().includes("analyze") ||
+      lessonId.includes("index") ||
+      lessonId.includes("optimize");
+
+    return (
+      <div className="w-full h-full flex flex-col bg-slate-950 text-slate-200 font-sans">
+        {/* SQL Header Subtabs */}
+        <div className="bg-slate-900 border-b border-slate-800 px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2">
+            <Database className="w-4 h-4 text-emerald-400" />
+            <span className="font-bold text-white">MySQL / PostgreSQL Interactive Engine</span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px]">
+              Query OK (0.0018 sec)
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <button
+              onClick={() => setActiveSubTab("table")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                activeSubTab === "table"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Table className="w-3.5 h-3.5" />
+              <span>ตารางข้อมูล (Data Grid)</span>
+            </button>
+            <button
+              onClick={() => setActiveSubTab("plan")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                activeSubTab === "plan"
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>แผนการทำงาน (Explain Plan)</span>
+            </button>
+            <button
+              onClick={() => setActiveSubTab("terminal")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                activeSubTab === "terminal"
+                  ? "bg-slate-800 text-white"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Terminal className="w-3.5 h-3.5" />
+              <span>Terminal Log</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Tab 1: Data Table View */}
+        {activeSubTab === "table" && (
+          <div className="flex-grow p-4 md:p-6 overflow-auto">
+            <div className="flex items-center justify-between mb-3 text-xs text-slate-400">
+              <span className="flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                ผลลัพธ์การสืบค้นข้อมูล: <strong>5 แถว (Fetched 5 rows in 0.0014 sec)</strong>
+              </span>
+              <span className="text-[11px] bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                Database: <code className="text-emerald-400">rms_college_db</code>
+              </span>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/80 shadow-md">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-800/90 text-slate-300 uppercase font-mono tracking-wider border-b border-slate-700">
+                  <tr>
+                    <th className="px-4 py-3">student_id</th>
+                    <th className="px-4 py-3">first_name</th>
+                    <th className="px-4 py-3">last_name</th>
+                    <th className="px-4 py-3">department</th>
+                    <th className="px-4 py-3">gpa</th>
+                    <th className="px-4 py-3">status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800 font-mono text-slate-200">
+                  <tr className="hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3 text-emerald-400 font-bold">STD-670101</td>
+                    <td className="px-4 py-3">สมชาย</td>
+                    <td className="px-4 py-3">ใจดี</td>
+                    <td className="px-4 py-3 text-blue-400">ช่างเทคนิคคอมพิวเตอร์</td>
+                    <td className="px-4 py-3 text-amber-400 font-bold">3.85</td>
+                    <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px]">ปกติ</span></td>
+                  </tr>
+                  <tr className="hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3 text-emerald-400 font-bold">STD-670102</td>
+                    <td className="px-4 py-3">กานดา</td>
+                    <td className="px-4 py-3">สุขเกษม</td>
+                    <td className="px-4 py-3 text-blue-400">เทคโนโลยีสารสนเทศ</td>
+                    <td className="px-4 py-3 text-amber-400 font-bold">3.92</td>
+                    <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px]">ปกติ</span></td>
+                  </tr>
+                  <tr className="hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3 text-emerald-400 font-bold">STD-670103</td>
+                    <td className="px-4 py-3">ธนากร</td>
+                    <td className="px-4 py-3">วิเศษศิลป์</td>
+                    <td className="px-4 py-3 text-blue-400">เทคโนโลยีสารสนเทศ</td>
+                    <td className="px-4 py-3 text-amber-400 font-bold">3.78</td>
+                    <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px]">ปกติ</span></td>
+                  </tr>
+                  <tr className="hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3 text-emerald-400 font-bold">STD-670104</td>
+                    <td className="px-4 py-3">พิมชนก</td>
+                    <td className="px-4 py-3">รัตนชัย</td>
+                    <td className="px-4 py-3 text-blue-400">คอมพิวเตอร์ธุรกิจ</td>
+                    <td className="px-4 py-3 text-amber-400 font-bold">3.65</td>
+                    <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px]">ปกติ</span></td>
+                  </tr>
+                  <tr className="hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3 text-emerald-400 font-bold">STD-670105</td>
+                    <td className="px-4 py-3">ณัฐพล</td>
+                    <td className="px-4 py-3">มั่งคั่ง</td>
+                    <td className="px-4 py-3 text-blue-400">อิเล็กทรอนิกส์</td>
+                    <td className="px-4 py-3 text-amber-400 font-bold">3.70</td>
+                    <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px]">ปกติ</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-4 p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between text-xs">
+              <span className="text-slate-400">
+                สถานะการทำงาน: <span className="text-emerald-400 font-bold">Success</span>
+              </span>
+              <span className="text-slate-500">
+                Memory Peak: <span className="text-slate-300">1.2 MB</span> | Buffer Cache Hit: <span className="text-slate-300">100%</span>
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: Explain Execution Plan */}
+        {activeSubTab === "plan" && (
+          <div className="flex-grow p-4 md:p-6 overflow-auto space-y-4">
+            <div className="p-3 bg-blue-950/40 border border-blue-800/60 rounded-xl text-xs text-blue-300 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-blue-400 shrink-0" />
+              <span>
+                <strong>B-Tree Index Scan:</strong> ระบบใช้ Index <code>idx_students_dept_gpa</code> ในการกระโดดหาข้อมูลตรงจุด โดยไม่ต้องสแกนทุกแถว (Full Table Scan)
+              </span>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900 shadow-md">
+              <table className="w-full text-left text-xs font-mono">
+                <thead className="bg-slate-800 text-slate-300 uppercase tracking-wider border-b border-slate-700">
+                  <tr>
+                    <th className="px-3 py-2.5">id</th>
+                    <th className="px-3 py-2.5">select_type</th>
+                    <th className="px-3 py-2.5">table</th>
+                    <th className="px-3 py-2.5">type</th>
+                    <th className="px-3 py-2.5">possible_keys</th>
+                    <th className="px-3 py-2.5">key</th>
+                    <th className="px-3 py-2.5">rows</th>
+                    <th className="px-3 py-2.5">filtered</th>
+                    <th className="px-3 py-2.5">Extra</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800 text-slate-200">
+                  <tr className="hover:bg-slate-800/50">
+                    <td className="px-3 py-2.5 text-emerald-400 font-bold">1</td>
+                    <td className="px-3 py-2.5">SIMPLE</td>
+                    <td className="px-3 py-2.5 text-blue-400">students</td>
+                    <td className="px-3 py-2.5 text-amber-400 font-bold">ref</td>
+                    <td className="px-3 py-2.5 text-slate-400">idx_students_dept_gpa</td>
+                    <td className="px-3 py-2.5 text-emerald-400 font-bold">idx_students_dept_gpa</td>
+                    <td className="px-3 py-2.5 text-amber-400 font-bold">4</td>
+                    <td className="px-3 py-2.5">100.00%</td>
+                    <td className="px-3 py-2.5 text-blue-300">Using index condition</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl">
+                <div className="text-slate-400">Access Type</div>
+                <div className="text-base font-bold text-emerald-400 mt-1">ref (Index Range)</div>
+                <div className="text-[11px] text-slate-500 mt-0.5">เร็วกว่า ALL Table Scan ~98%</div>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl">
+                <div className="text-slate-400">Estimated Cost</div>
+                <div className="text-base font-bold text-amber-400 mt-1">1.25 Units</div>
+                <div className="text-[11px] text-slate-500 mt-0.5">CPU Cycles ต่ำมาก</div>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl">
+                <div className="text-slate-400">Disk I/O Reads</div>
+                <div className="text-base font-bold text-blue-400 mt-1">3 Page Blocks</div>
+                <div className="text-[11px] text-slate-500 mt-0.5">B-Tree Depth: 3 Levels</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Terminal Console */}
+        {activeSubTab === "terminal" && (
+          <div className="flex-grow p-4 md:p-6 overflow-auto font-mono text-xs space-y-2">
+            <div className="text-slate-500">
+              mysql&gt; {code.split("\n")[0] || "SELECT * FROM students;"}
+            </div>
+            <div className="text-emerald-400 font-bold">
+              +------------+------------+-----------+--------------------+------+--------+
+            </div>
+            <div className="text-slate-300">
+              | student_id | first_name | last_name | department         | gpa  | status |
+            </div>
+            <div className="text-emerald-400 font-bold">
+              +------------+------------+-----------+--------------------+------+--------+
+            </div>
+            <div className="text-slate-200">
+              | STD-670101 | สมชาย      | ใจดี      | ช่างเทคนิคคอมฯ     | 3.85 | ปกติ   |<br />
+              | STD-670102 | กานดา      | สุขเกษม   | เทคโนโลยีสารสนเทศ  | 3.92 | ปกติ   |<br />
+              | STD-670103 | ธนากร      | วิเศษศิลป์| เทคโนโลยีสารสนเทศ  | 3.78 | ปกติ   |<br />
+              | STD-670104 | พิมชนก     | รัตนชัย   | คอมพิวเตอร์ธุรกิจ  | 3.65 | ปกติ   |<br />
+              | STD-670105 | ณัฐพล      | มั่งคั่ง  | อิเล็กทรอนิกส์     | 3.70 | ปกติ   |
+            </div>
+            <div className="text-emerald-400 font-bold">
+              +------------+------------+-----------+--------------------+------+--------+
+            </div>
+            <div className="text-slate-400 mt-2">
+              5 rows in set (0.0018 sec)
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // 3. IOT (ESP32 / ARDUINO): Real Arduino Serial Monitor with Controls
+  if (courseId === "iot") {
+    return (
+      <div className="w-full h-full flex flex-col bg-black text-green-400 font-mono text-xs">
+        {/* Arduino Serial Monitor Topbar */}
+        <div className="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-slate-300">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-bold text-white text-xs">Arduino IDE Serial Monitor</span>
+            <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px]">
+              COM3 (ESP32-WROOM-32)
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800 text-[11px]">
+              <span className="text-slate-500">Baud:</span>
+              <select
+                value={baudRate}
+                onChange={(e) => setBaudRate(e.target.value)}
+                className="bg-transparent text-emerald-400 outline-none cursor-pointer"
+              >
+                <option value="9600">9600 baud</option>
+                <option value="115200">115200 baud</option>
+              </select>
+            </div>
+
+            <button
+              onClick={() => setSerialLogs([])}
+              className="p-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors flex items-center gap-1 text-[11px] cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3" /> ล้างจอ
+            </button>
+          </div>
+        </div>
+
+        {/* Serial Log Output Feed */}
+        <div className="flex-grow p-4 overflow-y-auto space-y-1.5 leading-relaxed bg-slate-950 font-mono">
+          {serialLogs.map((log, idx) => (
+            <div key={idx} className="whitespace-pre-wrap">
+              {log.includes(">> SEND") ? (
+                <span className="text-amber-400 font-bold">{log}</span>
+              ) : log.includes("WiFi") ? (
+                <span className="text-blue-400">{log}</span>
+              ) : log.includes("MQTT") ? (
+                <span className="text-purple-400">{log}</span>
+              ) : log.includes("DHT22") ? (
+                <span className="text-emerald-300 font-semibold">{log}</span>
+              ) : (
+                <span className="text-slate-300">{log}</span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Serial Command Input Bar */}
+        <form
+          onSubmit={handleSerialSend}
+          className="bg-slate-900 border-t border-slate-800 p-2.5 flex items-center gap-2"
+        >
+          <span className="text-blue-400 font-bold text-xs pl-2">Serial.read():</span>
+          <input
+            type="text"
+            value={serialInput}
+            onChange={(e) => setSerialInput(e.target.value)}
+            placeholder="พิมพ์คำสั่งส่งเข้าบอร์ด ESP32 (เช่น STATUS, LED_ON, READ_TEMP)..."
+            className="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500"
+          />
+          <button
+            type="submit"
+            className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-colors flex items-center gap-1 cursor-pointer"
+          >
+            <Send className="w-3 h-3" /> ส่ง
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  // 4. MOBILE / FLUTTER: Interactive Smartphone Simulator
+  if (courseId === "mobile") {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 p-4 overflow-y-auto">
+        <div className="w-full max-w-[340px] h-[580px] bg-slate-950 rounded-[40px] border-[6px] border-slate-800 shadow-2xl flex flex-col overflow-hidden relative">
+          {/* Top Notch / Dynamic Island */}
+          <div className="w-full h-6 bg-slate-950 flex items-center justify-between px-6 pt-1 shrink-0 z-20 text-[10px] text-white font-mono">
+            <span>9:41</span>
+            <div className="w-20 h-3.5 bg-black rounded-full" />
+            <div className="flex items-center gap-1">
+              <Wifi className="w-3 h-3" />
+              <div className="w-4 h-2 border border-white rounded-sm p-0.5">
+                <div className="w-full h-full bg-white rounded-xs" />
+              </div>
+            </div>
+          </div>
+
+          {/* Flutter App Bar */}
+          <div className="bg-blue-600 text-white px-4 py-3 flex items-center justify-between shadow-md shrink-0">
+            <div className="font-bold text-sm">IT Student Portal</div>
+            <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
+              IT
+            </div>
+          </div>
+
+          {/* App Body Content */}
+          <div className="flex-grow p-4 overflow-y-auto space-y-3 bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-xs">
+            {mobileTab === "home" && (
+              <>
+                {/* Student Profile Card */}
+                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 text-white font-bold text-lg flex items-center justify-center">
+                      ธ
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm">ธนกฤต ชัยชนะ</h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        ปวส. 1 • เทคโนโลยีสารสนเทศ
+                      </p>
+                      <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+                        GPA: 3.85 (เกียรตินิยม)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Interactive Card */}
+                <div className="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-xs">การลงทะเบียนวิชาเรียน</span>
+                    <button
+                      onClick={() => setCardToggled(!cardToggled)}
+                      className="text-[11px] font-semibold text-blue-500 hover:underline"
+                    >
+                      {cardToggled ? "ซ่อน" : "ดูตาราง"}
+                    </button>
+                  </div>
+                  {cardToggled && (
+                    <div className="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 pt-1 border-t border-slate-100 dark:border-slate-700">
+                      <div>• 30204-2001 ระบบเครือข่ายคอมพิวเตอร์</div>
+                      <div>• 30204-2002 การพัฒนาเว็บขั้นสูง</div>
+                      <div>• 30204-2003 ระบบจัดการฐานข้อมูล RMS</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick Actions */}
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <button
+                    onClick={() => alert("จำลอง: ดาวน์โหลดใบรายงานผลการเรียน PDF สำเร็จ")}
+                    className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold border border-blue-200 dark:border-blue-900/50 hover:bg-blue-100 transition-colors"
+                  >
+                    📄 ใบเกรด (PDF)
+                  </button>
+                  <button
+                    onClick={() => alert("จำลอง: เชื่อมต่อ GPS วิทยาลัยสำเร็จ (อยู่ในรัศมีการเช็คชื่อ)")}
+                    className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-200 dark:border-emerald-900/50 hover:bg-emerald-100 transition-colors"
+                  >
+                    📍 เช็คชื่อเข้าเรียน
+                  </button>
+                </div>
+              </>
+            )}
+
+            {mobileTab === "schedule" && (
+              <div className="space-y-2">
+                <div className="font-bold text-xs text-slate-500">ตารางเรียนวันจันทร์:</div>
+                <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <div className="font-bold text-blue-600 dark:text-blue-400">08:30 - 12:30 น.</div>
+                  <div className="text-xs font-semibold">Cisco Network Routing Lab</div>
+                  <div className="text-[10px] text-slate-400">ห้องปฏิบัติการ 402 • ตึก IT</div>
+                </div>
+                <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <div className="font-bold text-blue-600 dark:text-blue-400">13:30 - 16:30 น.</div>
+                  <div className="text-xs font-semibold">Database Management & Indexing</div>
+                  <div className="text-[10px] text-slate-400">ห้องปฏิบัติการ 405 • ตึก IT</div>
+                </div>
+              </div>
+            )}
+
+            {mobileTab === "grades" && (
+              <div className="space-y-2">
+                <div className="font-bold text-xs text-slate-500">ผลการเรียนภาคเรียนที่ 1:</div>
+                <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl flex justify-between items-center border border-slate-200 dark:border-slate-700">
+                  <span>Network Systems</span>
+                  <span className="font-bold text-emerald-500">4.0 (A)</span>
+                </div>
+                <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl flex justify-between items-center border border-slate-200 dark:border-slate-700">
+                  <span>IoT & Microcontroller</span>
+                  <span className="font-bold text-emerald-500">4.0 (A)</span>
+                </div>
+                <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl flex justify-between items-center border border-slate-200 dark:border-slate-700">
+                  <span>Web App Development</span>
+                  <span className="font-bold text-blue-500">3.5 (B+)</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Navigation Bar */}
+          <div className="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 px-4 py-2 flex items-center justify-around shrink-0 text-[10px]">
+            <button
+              onClick={() => setMobileTab("home")}
+              className={`flex flex-col items-center gap-0.5 ${
+                mobileTab === "home" ? "text-blue-600 dark:text-blue-400 font-bold" : "text-slate-400"
+              }`}
+            >
+              <span>🏠</span>
+              <span>หน้าหลัก</span>
+            </button>
+            <button
+              onClick={() => setMobileTab("schedule")}
+              className={`flex flex-col items-center gap-0.5 ${
+                mobileTab === "schedule" ? "text-blue-600 dark:text-blue-400 font-bold" : "text-slate-400"
+              }`}
+            >
+              <span>📅</span>
+              <span>ตารางเรียน</span>
+            </button>
+            <button
+              onClick={() => setMobileTab("grades")}
+              className={`flex flex-col items-center gap-0.5 ${
+                mobileTab === "grades" ? "text-blue-600 dark:text-blue-400 font-bold" : "text-slate-400"
+              }`}
+            >
+              <span>🏆</span>
+              <span>เกรด</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 5. CYBERSECURITY: Kali Linux Terminal & Security Scan Log
+  if (courseId === "cybersecurity") {
+    return (
+      <div className="w-full h-full flex flex-col bg-slate-950 text-slate-200 font-mono text-xs">
+        <div className="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex items-center justify-between text-xs text-slate-400">
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-red-500" />
+            <span className="font-bold text-white">Kali Linux Security Assessment Terminal</span>
+            <span className="px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30 text-[10px]">
+              Target: 192.168.10.150
+            </span>
+          </div>
+          <span className="text-[11px] text-emerald-400 font-semibold">Exit code: 0</span>
+        </div>
+
+        <div className="flex-grow p-4 md:p-6 overflow-y-auto space-y-2 leading-relaxed bg-black text-slate-300">
+          <div className="text-red-400 font-bold">
+            root@kali-sec:~# nmap -sV -sC -T4 192.168.10.150
+          </div>
+          <div className="text-slate-400">
+            Starting Nmap 7.94 ( https://nmap.org ) at {new Date().toLocaleDateString("th-TH")} 14:32 ICT<br />
+            Nmap scan report for student-portal.college.ac.th (192.168.10.150)<br />
+            Host is up (0.00042s latency).<br />
+            Not shown: 997 closed tcp ports (reset)
+          </div>
+          <div className="text-emerald-400 font-bold">
+            PORT     STATE SERVICE VERSION<br />
+            22/tcp   open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.6 (Ubuntu Linux; protocol 2.0)<br />
+            80/tcp   open  http    Apache httpd 2.4.52 ((Ubuntu))<br />
+            |_http-title: IT College Student RMS Portal<br />
+            |_http-server-header: Apache/2.4.52 (Ubuntu)<br />
+            3306/tcp open  mysql   MySQL 8.0.36-0ubuntu0.22.04.1
+          </div>
+          <div className="pt-2 text-amber-400 font-semibold">
+            [+] Vulnerability Analysis Check:
+          </div>
+          <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 space-y-1">
+            <div>• <strong className="text-emerald-400">SSH Service:</strong> Password auth disabled, RSA key only (Secure)</div>
+            <div>• <strong className="text-amber-400">Web App:</strong> Missing Strict-Transport-Security (HSTS) Header</div>
+            <div>• <strong className="text-emerald-400">SQL Injection:</strong> Tested parameter &apos;id&apos; with Prepared Statement (Passed - No SQLi detected)</div>
+          </div>
+          <div className="text-slate-500 pt-2">
+            Nmap done: 1 IP address (1 host up) scanned in 2.14 seconds
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 6. DEFAULT / FALLBACK (Network etc.)
+  return (
+    <div className="w-full h-full flex flex-col bg-slate-950 p-6 font-mono text-xs md:text-sm text-slate-300 overflow-auto">
+      <div className="text-slate-500 mb-3 text-xs flex items-center gap-2">
+        <Terminal className="w-3.5 h-3.5 text-blue-400" />
+        <span>คอนโซลผลลัพธ์การประมวลผล (Execution Console)</span>
+      </div>
+      <div className="text-emerald-400 font-bold mb-3 flex items-center gap-1.5">
+        <CheckCircle2 className="w-4 h-4" /> โปรแกรมทำงานสมบูรณ์ (Exit code 0)
+      </div>
+      <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl text-slate-200 leading-relaxed font-mono">
+        {code.includes("print") || code.includes("cout") ? (
+          <div>
+            <div className="text-slate-400 text-xs mb-1">// Standard Output:</div>
+            <div className="text-emerald-300">
+              Hello, IT Academy! คำสั่งทำงานสำเร็จและได้ผลลัพธ์ตามโจทย์
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className="text-slate-400 text-xs mb-1">// Simulation Output:</div>
+            <div className="text-slate-100">
+              [OK] คำสั่งได้รับการตรวจสอบความถูกต้องทางไวยากรณ์ (Syntax Check Passed)
+            </div>
+            <div className="text-emerald-400 text-xs mt-2">
+              ✓ ค่าและตัวแปรทั้งหมดพร้อมนำไปใช้งานบนระบบจริง
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default React.memo(LessonResultViewer);
