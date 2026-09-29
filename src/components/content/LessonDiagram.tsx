@@ -759,11 +759,11 @@ function LessonDiagram({ type, caption }: DiagramProps) {
   if (!svgContent) return null;
 
   return (
-    <div className="my-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-900/60 p-4 shadow-xl">
-      <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-800/80">
+    <div className="my-6 rounded-2xl border border-slate-700 dark:border-slate-800 bg-slate-900 text-slate-100 p-4 shadow-xl">
+      <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-800">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
-          <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+          <span className="text-xs font-bold text-slate-200 uppercase tracking-wider">
             🖼️ ภาพประกอบเนื้อหาการสอน (Interactive Diagram)
           </span>
         </div>
@@ -781,7 +781,7 @@ function LessonDiagram({ type, caption }: DiagramProps) {
       {svgContent}
 
       {caption && (
-        <div className="mt-3 pt-2 border-t border-slate-800/60 flex items-start gap-2 text-xs text-slate-400">
+        <div className="mt-3 pt-2 border-t border-slate-800 flex items-start gap-2 text-xs text-slate-300">
           <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
           <span>{caption}</span>
         </div>

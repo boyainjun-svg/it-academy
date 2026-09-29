@@ -138,7 +138,7 @@ export default function CourseDetailPage() {
                 <Sparkles className="w-5 h-5 text-amber-500" />
                 ความคืบหน้าของบทเรียน
               </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
                 เรียนจบแล้ว {completedLessons.length} จาก {course.lessons.length} บทเรียน
               </p>
             </div>
@@ -162,7 +162,7 @@ export default function CourseDetailPage() {
                 <Wrench className="w-6 h-6 text-primary-500" />
                 โปรแกรมและเครื่องมือเฉพาะทางที่แนะนำสำหรับหลักสูตรนี้
               </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
                 เครื่องมือมาตรฐานระดับอุตสาหกรรมที่ใช้งานจริงในการปฏิบัติงานและทำแล็บ
               </p>
             </div>
@@ -183,7 +183,7 @@ export default function CourseDetailPage() {
                     <h3 className="font-bold text-base text-slate-900 dark:text-white mb-2">
                       {tool.name}
                     </h3>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
                       {tool.description}
                     </p>
                   </div>
@@ -213,7 +213,7 @@ export default function CourseDetailPage() {
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
                 สารบัญบทเรียนทั้งหมด
               </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
                 เรียงลำดับจากระดับเริ่มต้น ปานกลาง ไปจนถึงระดับขั้นสูง
               </p>
             </div>
@@ -227,7 +227,7 @@ export default function CourseDetailPage() {
                   className={`px-3.5 py-1.5 rounded-xl transition-all whitespace-nowrap ${
                     selectedLevel === lvl
                       ? "bg-white dark:bg-dark-900 text-primary-600 dark:text-primary-400 shadow-sm"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                      : "text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
                   {lvl === "เริ่มต้น" && "🌱 "}
@@ -292,10 +292,10 @@ export default function CourseDetailPage() {
                           {lesson.title}
                         </h3>
                       </div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
+                      <p className="text-sm text-slate-600 dark:text-slate-300 mb-3 leading-relaxed">
                         {lesson.description}
                       </p>
-                      <div className="flex items-center gap-4 text-xs font-medium text-slate-400 dark:text-slate-500">
+                      <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
                         <div className="flex items-center">
                           <Clock className="w-3.5 h-3.5 mr-1" />
                           {lesson.duration}

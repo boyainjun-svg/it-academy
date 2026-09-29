@@ -79,6 +79,41 @@ function renderContent(content: string, courseId?: string, lessonId?: string) {
     return null;
   };
 
+  function renderFormattedText(text: string, keyPrefix: string | number) {
+    const tokenRegex = /(\*\*.*?\*\*|`.*?`|\*.*?\*)/g;
+    const parts = text.split(tokenRegex);
+
+    return parts.map((part, idx) => {
+      if (!part) return null;
+      const k = `${keyPrefix}-${idx}`;
+      if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
+        return (
+          <strong key={k} className="font-bold text-slate-900 dark:text-white">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      if (part.startsWith("`") && part.endsWith("`") && part.length >= 2) {
+        return (
+          <code
+            key={k}
+            className="px-1.5 py-0.5 mx-0.5 rounded font-mono text-xs font-semibold bg-slate-100 dark:bg-dark-800 text-primary-600 dark:text-primary-300 border border-slate-200 dark:border-dark-700 inline-block"
+          >
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+      if (part.startsWith("*") && part.endsWith("*") && part.length >= 2) {
+        return (
+          <em key={k} className="italic text-slate-700 dark:text-slate-300">
+            {part.slice(1, -1)}
+          </em>
+        );
+      }
+      return part;
+    });
+  }
+
   while (i < lines.length) {
     const line = lines[i];
 
@@ -98,31 +133,40 @@ function renderContent(content: string, courseId?: string, lessonId?: string) {
           caption={captionLines.join(" ")}
         />
       );
+    } else if (line.startsWith("#### ")) {
+      elements.push(
+        <h4
+          key={key++}
+          className="text-lg font-bold mt-6 mb-2 text-slate-900 dark:text-white"
+        >
+          {renderFormattedText(line.replace("#### ", ""), `h4-${key}`)}
+        </h4>
+      );
     } else if (line.startsWith("### ")) {
       elements.push(
         <h3
           key={key++}
-          className="text-xl font-bold mt-6 mb-3 text-slate-900 dark:text-white"
+          className="text-xl font-bold mt-7 mb-3 text-slate-900 dark:text-white"
         >
-          {line.replace("### ", "")}
+          {renderFormattedText(line.replace("### ", ""), `h3-${key}`)}
         </h3>
       );
     } else if (line.startsWith("## ")) {
       elements.push(
         <h2
           key={key++}
-          className="text-2xl font-bold mt-8 mb-4 text-slate-900 dark:text-white"
+          className="text-2xl font-extrabold mt-9 mb-4 text-slate-900 dark:text-white"
         >
-          {line.replace("## ", "")}
+          {renderFormattedText(line.replace("## ", ""), `h2-${key}`)}
         </h2>
       );
     } else if (line.startsWith("# ")) {
       elements.push(
         <h1
           key={key++}
-          className="text-3xl font-extrabold mt-8 mb-4 text-slate-900 dark:text-white"
+          className="text-3xl font-black mt-8 mb-4 text-slate-900 dark:text-white"
         >
-          {line.replace("# ", "")}
+          {renderFormattedText(line.replace("# ", ""), `h1-${key}`)}
         </h1>
       );
     } else if (line.startsWith("```")) {
@@ -140,6 +184,92 @@ function renderContent(content: string, courseId?: string, lessonId?: string) {
           <pre>{codeLines.join("\n")}</pre>
         </div>
       );
+    } else if (line.trim().startsWith("|") && line.trim().endsWith("|")) {
+      const tableRows: string[] = [];
+      while (i < lines.length && lines[i].trim().startsWith("|")) {
+        tableRows.push(lines[i].trim());
+        i++;
+      }
+      i--;
+
+      const headerRow = tableRows[0];
+      const dataRows = tableRows.slice(1).filter((r) => !r.includes("---"));
+
+      const parseCells = (row: string) =>
+        row
+          .split("|")
+          .slice(1, -1)
+          .map((c) => c.trim());
+
+      const headerCells = parseCells(headerRow);
+
+      elements.push(
+        <div
+          key={key++}
+          className="my-6 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm"
+        >
+          <table className="w-full text-left text-sm border-collapse">
+            <thead className="bg-slate-100 dark:bg-dark-800 text-slate-900 dark:text-white font-bold text-xs uppercase tracking-wider">
+              <tr>
+                {headerCells.map((cell, idx) => (
+                  <th
+                    key={idx}
+                    className="py-3 px-4 border-b border-slate-200 dark:border-slate-800"
+                  >
+                    {renderFormattedText(cell, `th-${idx}`)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-dark-900/60 text-slate-700 dark:text-slate-200">
+              {dataRows.map((row, rIdx) => {
+                const cells = parseCells(row);
+                return (
+                  <tr
+                    key={rIdx}
+                    className="hover:bg-slate-50 dark:hover:bg-dark-800/40 transition-colors"
+                  >
+                    {cells.map((cell, cIdx) => (
+                      <td
+                        key={cIdx}
+                        className="py-3 px-4 leading-relaxed"
+                      >
+                        {renderFormattedText(cell, `td-${rIdx}-${cIdx}`)}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      );
+    } else if (line.trim() === "---") {
+      elements.push(
+        <hr
+          key={key++}
+          className="my-8 border-slate-200 dark:border-slate-800"
+        />
+      );
+    } else if (line.startsWith("> ") || line.startsWith(">")) {
+      const quoteLines: string[] = [];
+      while (i < lines.length && (lines[i].startsWith("> ") || lines[i].startsWith(">"))) {
+        quoteLines.push(lines[i].replace(/^>\s?/, ""));
+        i++;
+      }
+      i--;
+      elements.push(
+        <blockquote
+          key={key++}
+          className="border-l-4 border-primary-500 bg-primary-50/60 dark:bg-primary-950/20 p-4 rounded-r-2xl my-4 text-slate-700 dark:text-slate-300 text-sm leading-relaxed"
+        >
+          {quoteLines.map((q, idx) => (
+            <p key={idx} className={idx > 0 ? "mt-2" : ""}>
+              {renderFormattedText(q, `quote-${idx}`)}
+            </p>
+          ))}
+        </blockquote>
+      );
     } else if (line.startsWith("- ")) {
       const items: string[] = [];
       while (i < lines.length && lines[i].startsWith("- ")) {
@@ -150,10 +280,12 @@ function renderContent(content: string, courseId?: string, lessonId?: string) {
       elements.push(
         <ul
           key={key++}
-          className="list-disc pl-6 mb-4 space-y-2 text-slate-600 dark:text-slate-300"
+          className="list-disc pl-6 mb-4 space-y-2 text-slate-700 dark:text-slate-300 text-base"
         >
           {items.map((item, idx) => (
-            <li key={idx}>{item}</li>
+            <li key={idx} className="leading-relaxed">
+              {renderFormattedText(item, `ul-${idx}`)}
+            </li>
           ))}
         </ul>
       );
@@ -167,34 +299,24 @@ function renderContent(content: string, courseId?: string, lessonId?: string) {
       elements.push(
         <ol
           key={key++}
-          className="list-decimal pl-6 mb-4 space-y-2 text-slate-600 dark:text-slate-300"
+          className="list-decimal pl-6 mb-4 space-y-2 text-slate-700 dark:text-slate-300 text-base"
         >
           {items.map((item, idx) => (
-            <li key={idx}>{item}</li>
+            <li key={idx} className="leading-relaxed">
+              {renderFormattedText(item, `ol-${idx}`)}
+            </li>
           ))}
         </ol>
       );
     } else if (line.trim() === "") {
       // skip empty lines
     } else {
-      const parts = line.split(/\*\*(.*?)\*\*/g);
       elements.push(
         <p
           key={key++}
-          className="mb-4 text-slate-600 dark:text-slate-300 leading-relaxed text-base"
+          className="mb-4 text-slate-700 dark:text-slate-300 leading-relaxed text-base"
         >
-          {parts.map((part, idx) =>
-            idx % 2 === 1 ? (
-              <strong
-                key={idx}
-                className="font-bold text-slate-900 dark:text-white"
-              >
-                {part}
-              </strong>
-            ) : (
-              part
-            )
-          )}
+          {renderFormattedText(line, `p-${key}`)}
         </p>
       );
     }
@@ -724,7 +846,7 @@ export default function LessonPage({
           {prevLesson ? (
             <Link
               href={`/courses/${courseId}/${prevLesson.id}`}
-              className="flex items-center px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-800 transition-colors"
+              className="flex items-center px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-dark-800 transition-colors"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
               บทก่อนหน้า
