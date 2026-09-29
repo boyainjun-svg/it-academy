@@ -71,10 +71,10 @@ export default function Footer() {
               <li className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-slate-400" />
                 <a
-                  href="mailto:hello@itacademy.com"
+                  href="mailto:itacademysvc@gmail.com"
                   className="text-sm text-slate-600 hover:text-blue-500 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
                 >
-                  hello@itacademy.com
+                  itacademysvc@gmail.com
                 </a>
               </li>
             </ul>
