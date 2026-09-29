@@ -56,7 +56,6 @@ export default function RegisterPage() {
   // OTP Verification Modal State
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpValues, setOtpValues] = useState<string[]>(["", "", "", "", "", ""]);
-  const [demoOtp, setDemoOtp] = useState<string | null>(null);
   const [otpError, setOtpError] = useState("");
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [timer, setTimer] = useState(60);
@@ -128,7 +127,6 @@ export default function RegisterPage() {
       }
 
       // Registration OK -> Show OTP Verification Modal
-      setDemoOtp(data.demoOtp || null);
       setShowOtpModal(true);
       setTimer(60);
       setCanResend(false);
@@ -171,13 +169,6 @@ export default function RegisterPage() {
     if (/^\d{6}$/.test(pasteData)) {
       const digits = pasteData.split("");
       setOtpValues(digits);
-      otpInputsRef.current[5]?.focus();
-    }
-  };
-
-  const fillDemoOtp = () => {
-    if (demoOtp && demoOtp.length === 6) {
-      setOtpValues(demoOtp.split(""));
       otpInputsRef.current[5]?.focus();
     }
   };
@@ -240,7 +231,6 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setDemoOtp(data.demoOtp || null);
         setTimer(60);
         setCanResend(false);
         setOtpValues(["", "", "", "", "", ""]);

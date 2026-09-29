@@ -35,7 +35,6 @@ export default function LoginPage() {
   // OTP Modal (if user is unverified)
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpValues, setOtpValues] = useState<string[]>(["", "", "", "", "", ""]);
-  const [demoOtp, setDemoOtp] = useState<string | null>(null);
   const [otpError, setOtpError] = useState("");
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [timer, setTimer] = useState(60);
@@ -90,15 +89,11 @@ export default function LoginPage() {
         setTimer(60);
         setCanResend(false);
         // Request fresh OTP code
-        const resendRes = await fetch("/api/auth/resend-otp", {
+        await fetch("/api/auth/resend-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email }),
         });
-        const resendData = await resendRes.json();
-        if (resendData.demoOtp) {
-          setDemoOtp(resendData.demoOtp);
-        }
         return;
       }
 
