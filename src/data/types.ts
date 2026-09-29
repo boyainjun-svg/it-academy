@@ -73,4 +73,5 @@ export interface Course {
   tags: string[];
   recommendedTools: RecommendedTool[];
   lessons: Lesson[];
+  category?: "core" | "language";
 }

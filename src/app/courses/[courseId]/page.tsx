@@ -71,6 +71,49 @@ const courseHeroThemes: Record<
     accentColor: "text-fuchsia-400",
     badgeBorder: "border-fuchsia-400/30 bg-fuchsia-950/50 text-fuchsia-100",
   },
+  // Programming Languages
+  python: {
+    gradientClass: "from-sky-700 via-blue-800 to-slate-900 dark:from-sky-950 dark:via-blue-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #0369a1 0%, #1d4ed8 45%, #0f172a 100%)",
+    accentColor: "text-sky-400",
+    badgeBorder: "border-sky-400/30 bg-sky-950/50 text-sky-100",
+  },
+  csharp: {
+    gradientClass: "from-purple-700 via-indigo-800 to-slate-900 dark:from-purple-950 dark:via-indigo-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #6d28d9 0%, #4338ca 45%, #0f172a 100%)",
+    accentColor: "text-purple-400",
+    badgeBorder: "border-purple-400/30 bg-purple-950/50 text-purple-100",
+  },
+  php: {
+    gradientClass: "from-indigo-700 via-purple-800 to-slate-900 dark:from-indigo-950 dark:via-purple-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #4f46e5 0%, #6d28d9 45%, #0f172a 100%)",
+    accentColor: "text-indigo-400",
+    badgeBorder: "border-indigo-400/30 bg-indigo-950/50 text-indigo-100",
+  },
+  go: {
+    gradientClass: "from-cyan-700 via-teal-800 to-slate-900 dark:from-cyan-950 dark:via-teal-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #0e7490 0%, #0f766e 45%, #0f172a 100%)",
+    accentColor: "text-cyan-400",
+    badgeBorder: "border-cyan-400/30 bg-cyan-950/50 text-cyan-100",
+  },
+  java: {
+    gradientClass: "from-red-700 via-orange-800 to-slate-900 dark:from-red-950 dark:via-orange-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #b91c1c 0%, #c2410c 45%, #0f172a 100%)",
+    accentColor: "text-red-400",
+    badgeBorder: "border-red-400/30 bg-red-950/50 text-red-100",
+  },
+  cpp: {
+    gradientClass: "from-blue-700 via-slate-800 to-slate-950 dark:from-blue-950 dark:via-slate-900 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #1d4ed8 0%, #334155 45%, #0f172a 100%)",
+    accentColor: "text-blue-400",
+    badgeBorder: "border-blue-400/30 bg-blue-950/50 text-blue-100",
+  },
+  typescript: {
+    gradientClass: "from-blue-700 via-sky-800 to-slate-900 dark:from-blue-950 dark:via-sky-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #1d4ed8 0%, #0369a1 45%, #0f172a 100%)",
+    accentColor: "text-blue-400",
+    badgeBorder: "border-blue-400/30 bg-blue-950/50 text-blue-100",
+  },
 };
 
 const defaultTheme = {
@@ -159,7 +202,12 @@ export default function CourseDetailPage() {
             <ChevronRight className="w-4 h-4 rotate-180 mr-1" />
             กลับไปหน้าหลักสูตรทั้งหมด
           </Link>
-          <div className="text-6xl mb-4 drop-shadow-lg">{course.icon}</div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="text-5xl md:text-6xl drop-shadow-lg">{course.icon}</div>
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-xs font-bold text-white shadow-sm">
+              {course.category === "language" ? "💻 หลักสูตรภาษาโปรแกรมมิ่ง" : "🏢 หลักสูตรสายงานวิชาชีพ IT"}
+            </span>
+          </div>
           <h1 className="text-3xl md:text-5xl font-black mb-6 text-white drop-shadow-md tracking-tight">
             {course.title}
           </h1>

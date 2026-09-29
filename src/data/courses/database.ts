@@ -8,6 +8,7 @@ export const databaseCourse: Course = {
   icon: "🗄️",
   color: "purple",
   gradient: "from-purple-500 to-violet-600",
+  category: "core",
   totalLessons: 9,
   difficulty: "ปานกลาง",
   tags: ["Database", "SQL", "PostgreSQL", "MySQL", "RMS", "Normalization", "Indexing", "ACID", "ER Diagram"],

@@ -8,6 +8,7 @@ export const iotCourse: Course = {
   icon: "🌐",
   color: "green",
   gradient: "from-green-500 to-emerald-600",
+  category: "core",
   totalLessons: 9,
   difficulty: "ปานกลาง",
   tags: ["IoT", "ESP32", "Arduino", "FreeRTOS", "MQTT", "Raspberry Pi", "MicroPython", "Embedded C++"],

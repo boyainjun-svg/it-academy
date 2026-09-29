@@ -8,6 +8,7 @@ export const mobileCourse: Course = {
   icon: "📱",
   color: "cyan",
   gradient: "from-cyan-500 to-teal-600",
+  category: "core",
   totalLessons: 9,
   difficulty: "ปานกลาง",
   tags: ["Mobile", "Flutter", "Dart 3", "Android", "iOS", "Riverpod", "GoRouter", "SQLite", "GPS"],

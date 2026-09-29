@@ -8,6 +8,7 @@ export const cybersecurityCourse: Course = {
   icon: "🔒",
   color: "pink",
   gradient: "from-fuchsia-500 to-pink-600",
+  category: "core",
   totalLessons: 9,
   difficulty: "ขั้นสูง",
   tags: ["Cybersecurity", "Ethical Hacking", "OWASP", "Burp Suite", "Wireshark", "Nmap", "Cryptography", "Linux Hardening"],

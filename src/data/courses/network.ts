@@ -8,6 +8,7 @@ export const networkCourse: Course = {
   icon: "🔌",
   color: "blue",
   gradient: "from-blue-500 to-indigo-600",
+  category: "core",
   totalLessons: 9,
   difficulty: "ปานกลาง",
   tags: ["Network", "Cisco", "CCNA", "Packet Tracer", "VLAN", "Routing", "OSPF", "Firewall", "Wireshark"],

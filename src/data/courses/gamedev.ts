@@ -8,6 +8,7 @@ export const gamedevCourse: Course = {
   icon: "🎮",
   color: "red",
   gradient: "from-red-500 to-rose-600",
+  category: "core",
   totalLessons: 9,
   difficulty: "ปานกลาง",
   tags: ["GameDev", "GameEngine", "JavaScript", "HTML5 Canvas", "Godot 4", "Physics", "A* AI", "GDScript"],

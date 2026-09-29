@@ -8,6 +8,7 @@ export const webdevCourse: Course = {
   icon: "🖥️",
   color: "orange",
   gradient: "from-orange-500 to-amber-600",
+  category: "core",
   totalLessons: 9,
   difficulty: "ปานกลาง",
   tags: ["WebDev", "HTML5", "CSS3", "JavaScript", "React 18", "Next.js 14", "Tailwind CSS", "Full-Stack"],

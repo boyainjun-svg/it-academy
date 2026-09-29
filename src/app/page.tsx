@@ -52,7 +52,11 @@ const CourseCard = ({ course }: any) => {
           <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 dark:bg-white/5 rounded-bl-full -mr-10 -mt-10 transition-transform group-hover:scale-110" />
           
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${course.iconBg} ${course.iconColor}`}>
-            <course.icon className="w-6 h-6" />
+            {course.emoji ? (
+              <span className="text-2xl">{course.emoji}</span>
+            ) : course.icon ? (
+              <course.icon className="w-6 h-6" />
+            ) : null}
           </div>
           
           <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{course.title}</h3>
@@ -81,6 +85,7 @@ const CourseCard = ({ course }: any) => {
 };
 
 export default function Home() {
+  const [homeCategory, setHomeCategory] = useState<"core" | "language">("core");
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
@@ -108,7 +113,7 @@ export default function Home() {
     {
       icon: BookOpen,
       title: "หลักสูตรครบวงจร",
-      description: "ครอบคลุม 7 สาขา IT ตั้งแต่เครือข่ายไปจนถึงไซเบอร์ซิเคียวริตี้"
+      description: "ครอบคลุมทั้ง 7 สายงาน IT และ 7 ภาษาโปรแกรมมิ่งยอดนิยมระดับสากล"
     },
     {
       icon: Trophy,
@@ -122,7 +127,7 @@ export default function Home() {
     }
   ];
 
-  const courses = [
+  const coreCoursesList = [
     {
       id: "iot",
       title: "IoT & Embedded Systems",
@@ -192,6 +197,79 @@ export default function Home() {
       gradient: "from-fuchsia-500 to-pink-600",
       iconBg: "bg-fuchsia-500/10",
       iconColor: "text-fuchsia-500"
+    }
+  ];
+
+  const languageCoursesList = [
+    {
+      id: "python",
+      title: "Python for Data & AI",
+      description: "ไพทอนสมัยใหม่, OOP, AsyncIO, FastAPI จนถึง Pandas/NumPy สำหรับงานวิเคราะห์ข้อมูล",
+      lessons: 9,
+      emoji: "🐍",
+      gradient: "from-sky-500 to-blue-600",
+      iconBg: "bg-sky-500/10",
+      iconColor: "text-sky-500"
+    },
+    {
+      id: "csharp",
+      title: "C# & .NET 8 Enterprise",
+      description: "C# 12, .NET 8, LINQ, Task Parallel, ASP.NET Core และ Entity Framework Core 8",
+      lessons: 9,
+      emoji: "🔷",
+      gradient: "from-purple-500 to-indigo-600",
+      iconBg: "bg-purple-500/10",
+      iconColor: "text-purple-500"
+    },
+    {
+      id: "php",
+      title: "Modern PHP 8.3",
+      description: "PHP 8.3 Strict Types, OOP, Composer, PSR, PDO Security จนถึงสถาปัตยกรรม MVC",
+      lessons: 9,
+      emoji: "🐘",
+      gradient: "from-indigo-500 to-violet-600",
+      iconBg: "bg-indigo-500/10",
+      iconColor: "text-indigo-500"
+    },
+    {
+      id: "go",
+      title: "Go (Golang) Microservices",
+      description: "Goroutines, Channels, Pointers, Structs, Interfaces และ Microservices ด้วย Gin",
+      lessons: 9,
+      emoji: "🦫",
+      gradient: "from-cyan-500 to-teal-600",
+      iconBg: "bg-cyan-500/10",
+      iconColor: "text-cyan-500"
+    },
+    {
+      id: "java",
+      title: "Java 21 LTS & Spring Boot 3",
+      description: "Modern Java 21, JVM Internals, Records, Virtual Threads และ Spring Boot 3 Framework",
+      lessons: 9,
+      emoji: "☕",
+      gradient: "from-red-500 to-orange-600",
+      iconBg: "bg-red-500/10",
+      iconColor: "text-red-500"
+    },
+    {
+      id: "cpp",
+      title: "Modern C++ (C++23) Systems",
+      description: "C++ สมัยใหม่, RAII, Smart Pointers, Move Semantics, Templates และ Concurrency",
+      lessons: 9,
+      emoji: "⚡",
+      gradient: "from-blue-600 to-slate-800",
+      iconBg: "bg-blue-500/10",
+      iconColor: "text-blue-500"
+    },
+    {
+      id: "typescript",
+      title: "Advanced TypeScript 5",
+      description: "Structural Typing, Generics, Utility Types, Conditional Types และ Zod Validation",
+      lessons: 9,
+      emoji: "🟦",
+      gradient: "from-blue-500 to-sky-600",
+      iconBg: "bg-blue-500/10",
+      iconColor: "text-blue-500"
     }
   ];
 
@@ -266,10 +344,10 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto pt-8 border-t border-slate-200 dark:border-dark-800 fade-up">
             {[
-              { label: "7 หลักสูตร", value: "ครอบคลุมทุกสาย" },
-              { label: "100+ บทเรียน", value: "เนื้อหาอัดแน่น" },
-              { label: "เขียนโค้ดได้จริง", value: "บนหน้าเว็บ" },
-              { label: "ฟรี 100%", value: "ไม่มีค่าใช้จ่าย" }
+              { label: "14 หลักสูตร", value: "ครอบคลุมสายงาน & ภาษา" },
+              { label: "126 บทเรียน", value: "เนื้อหาเชิงลึกระดับสากล" },
+              { label: "เขียนโค้ดได้จริง", value: "Interactive Compiler" },
+              { label: "ฟรี 100%", value: "เพื่อการศึกษาไทย" }
             ].map((stat, i) => (
               <div key={i} className="text-center">
                 <div className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-1">{stat.label}</div>
@@ -305,18 +383,54 @@ export default function Home() {
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary-900/10 to-transparent pointer-events-none" />
         
         <div className="container mx-auto px-6 relative z-10">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12 fade-up">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 fade-up">
             <div>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">หลักสูตรทั้งหมด</h2>
-              <p className="text-slate-600 dark:text-slate-300 text-lg">เลือกเรียนตามสายที่คุณสนใจ จากพื้นฐานสู่มืออาชีพ</p>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-950/60 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-2">
+                <span>เลือกเรียนได้ตามเป้าหมายของคุณ</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-2">
+                หลักสูตรที่เปิดสอน
+              </h2>
+              <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg">
+                ยกระดับทักษะจากศูนย์สู่มืออาชีพ ครอบคลุมทั้งสายงานวิศวกรรม IT และภาษาโปรแกรมมิ่ง
+              </p>
             </div>
-            <Link href="/courses" className="hidden md:flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold transition-colors">
-              ดูหลักสูตรทั้งหมด <ArrowRight className="w-4 h-4 ml-2" />
-            </Link>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
+              <div className="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-dark-900 border border-slate-200 dark:border-slate-800">
+                <button
+                  onClick={() => setHomeCategory("core")}
+                  className={`px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all ${
+                    homeCategory === "core"
+                      ? "bg-white dark:bg-dark-800 text-slate-900 dark:text-white shadow-sm"
+                      : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  🏢 สายงาน IT (7)
+                </button>
+                <button
+                  onClick={() => setHomeCategory("language")}
+                  className={`px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all ${
+                    homeCategory === "language"
+                      ? "bg-white dark:bg-dark-800 text-slate-900 dark:text-white shadow-sm"
+                      : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  💻 ภาษาโปรแกรมมิ่ง (7)
+                </button>
+              </div>
+
+              <Link
+                href="/courses"
+                className="hidden md:flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold text-sm transition-colors"
+              >
+                ดูทั้งหมด 14 หลักสูตร <ArrowRight className="w-4 h-4 ml-1" />
+              </Link>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {courses.map((course, index) => (
+            {(homeCategory === "core" ? coreCoursesList : languageCoursesList).map((course) => (
               <div key={course.id} className="fade-up">
                 <CourseCard course={course} />
               </div>
