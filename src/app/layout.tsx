@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th" suppressHydrationWarning>
-      <body className="font-sans min-h-screen flex flex-col relative antialiased">
+      <body className="font-sans min-h-screen flex flex-col relative antialiased bg-white dark:bg-dark-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
