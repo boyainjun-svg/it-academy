@@ -1,17 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAllUsers, adminCreateUser, findUserByEmail } from "@/lib/server-db";
+import { verifyAdminAuth } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
+    // 1. Mandatory Admin Authentication Gate
+    const auth = await verifyAdminAuth(req);
+    if (!auth.authenticated) {
+      return auth.response;
+    }
+
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search")?.toLowerCase().trim() || "";
     const role = searchParams.get("role") || "";
     const verified = searchParams.get("verified");
 
-    let users = await getAllUsers();
- 
+    let rawUsers = await getAllUsers();
+
+    // Defense-in-depth: Ensure NO credential fields (hashes/salts) ever leak
+    let users = rawUsers.map((u: any) => {
+      const { passwordHash, salt, ...safeUser } = u;
+      return safeUser;
+    });
+
     if (search) {
       users = users.filter(
         (u) =>
@@ -50,6 +63,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Mandatory Admin Authentication Gate
+    const auth = await verifyAdminAuth(req);
+    if (!auth.authenticated) {
+      return auth.response;
+    }
+
     const body = await req.json();
     const { name, email, password, institution, department, educationLevel, role, isVerified } = body;
 

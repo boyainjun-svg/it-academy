@@ -78,7 +78,9 @@ interface AdminStats {
 }
 
 interface SessionItem {
+  id?: string;
   token: string;
+  tokenMasked?: string;
   userId: string;
   expiresAt: number;
   user?: {
@@ -222,18 +224,35 @@ export default function AdminDashboardPage() {
     setTimeout(() => setActionSuccessMessage(""), 3500);
   };
 
+  const getAdminJsonHeaders = () => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("it_academy_admin_token") || "" : "";
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+  };
+
+  const getAdminAuthHeaders = () => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("it_academy_admin_token") || "" : "";
+    return {
+      Authorization: `Bearer ${token}`,
+    };
+  };
+
   // User Actions
   const handleToggleVerify = async (user: AdminUser) => {
     try {
       const res = await fetch(`/api/admin/users/${user.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: getAdminJsonHeaders(),
         body: JSON.stringify({ isVerified: !user.isVerified }),
       });
       const data = await res.json();
       if (data.success) {
         showBanner(`เปลี่ยนสถานะยืนยันของ ${user.name} สำเร็จ`);
         fetchData();
+      } else {
+        alert(data.message || "เกิดข้อผิดพลาดในการเปลี่ยนสถานะ");
       }
     } catch (e) {
       alert("เกิดข้อผิดพลาดในการเปลี่ยนสถานะ");
@@ -244,13 +263,15 @@ export default function AdminDashboardPage() {
     try {
       const res = await fetch(`/api/admin/users/${user.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: getAdminJsonHeaders(),
         body: JSON.stringify({ role: newRole }),
       });
       const data = await res.json();
       if (data.success) {
         showBanner(`เปลี่ยนสิทธิ์ ${user.name} เป็น ${newRole} สำเร็จ`);
         fetchData();
+      } else {
+        alert(data.message || "เกิดข้อผิดพลาดในการเปลี่ยนบทบาท");
       }
     } catch (e) {
       alert("เกิดข้อผิดพลาดในการเปลี่ยนบทบาท");
@@ -261,12 +282,15 @@ export default function AdminDashboardPage() {
     try {
       const res = await fetch(`/api/admin/users/${user.id}`, {
         method: "DELETE",
+        headers: getAdminAuthHeaders(),
       });
       const data = await res.json();
       if (data.success) {
         showBanner(`ลบผู้ใช้ ${user.name} เรียบร้อยแล้ว`);
         setDeleteConfirmUser(null);
         fetchData();
+      } else {
+        alert(data.message || "ไม่สามารถลบผู้ใช้งานได้");
       }
     } catch (e) {
       alert("ไม่สามารถลบผู้ใช้งานได้");
@@ -283,7 +307,7 @@ export default function AdminDashboardPage() {
     try {
       const res = await fetch("/api/admin/users", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAdminJsonHeaders(),
         body: JSON.stringify(newUserData),
       });
       const data = await res.json();
@@ -316,7 +340,7 @@ export default function AdminDashboardPage() {
     try {
       const res = await fetch(`/api/admin/users/${selectedUser.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: getAdminJsonHeaders(),
         body: JSON.stringify({
           name: selectedUser.name,
           institution: selectedUser.institution,
@@ -332,6 +356,8 @@ export default function AdminDashboardPage() {
         setShowEditModal(false);
         setSelectedUser(null);
         fetchData();
+      } else {
+        alert(data.message || "ไม่สามารถอัปเดตข้อมูลได้");
       }
     } catch (e) {
       alert("ไม่สามารถอัปเดตข้อมูลได้");
@@ -342,11 +368,14 @@ export default function AdminDashboardPage() {
     try {
       const res = await fetch(`/api/admin/sessions?token=${encodeURIComponent(token)}`, {
         method: "DELETE",
+        headers: getAdminAuthHeaders(),
       });
       const data = await res.json();
       if (data.success) {
         showBanner("ยกเลิกเซสชันสำเร็จ");
         fetchData();
+      } else {
+        alert(data.message || "ไม่สามารถยกเลิกเซสชันได้");
       }
     } catch (e) {
       alert("ไม่สามารถยกเลิกเซสชันได้");
@@ -1170,7 +1199,7 @@ export default function AdminDashboardPage() {
                           <span>สถาบัน: {sess.user?.institution || "ไม่ระบุ"}</span>
                           <span>•</span>
                           <span className="font-mono">
-                            Token: {sess.token.slice(0, 16)}...
+                            Session: {sess.tokenMasked || (sess.token.length > 12 ? sess.token.slice(0, 8) + "..." + sess.token.slice(-4) : "******")}
                           </span>
                         </div>
                       </div>

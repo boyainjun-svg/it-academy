@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateUser, deleteUser, findUserById } from "@/lib/server-db";
+import { verifyAdminAuth } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -8,6 +9,12 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    // 1. Mandatory Admin Authentication Gate
+    const auth = await verifyAdminAuth(req);
+    if (!auth.authenticated) {
+      return auth.response;
+    }
+
     const { id } = params;
     const body = await req.json();
 
@@ -16,6 +23,14 @@ export async function PATCH(
       return NextResponse.json(
         { success: false, message: "ไม่พบผู้ใช้งานนี้ในระบบ" },
         { status: 404 }
+      );
+    }
+
+    // Protection: Prevent demoting or de-verifying Super Admin
+    if (id === "usr_kitsvcadmin" && (body.role && body.role !== "admin")) {
+      return NextResponse.json(
+        { success: false, message: "ไม่อนุญาตให้ลดระดับสิทธิ์ของบัญชี Super Admin" },
+        { status: 403 }
       );
     }
 
@@ -48,9 +63,31 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
-    const success = await deleteUser(id);
+    // 1. Mandatory Admin Authentication Gate
+    const auth = await verifyAdminAuth(req);
+    if (!auth.authenticated) {
+      return auth.response;
+    }
 
+    const { id } = params;
+
+    // Protection: Prevent deleting Super Admin
+    if (id === "usr_kitsvcadmin") {
+      return NextResponse.json(
+        { success: false, message: "ไม่อนุญาตให้ลบบัญชี Super Admin ของระบบ" },
+        { status: 403 }
+      );
+    }
+
+    // Protection: Prevent deleting own active session account
+    if (id === auth.admin.id) {
+      return NextResponse.json(
+        { success: false, message: "ไม่สามารถลบบัญชีผู้ดูแลระบบของตนเองในขณะที่กำลังใช้งานอยู่ได้" },
+        { status: 400 }
+      );
+    }
+
+    const success = await deleteUser(id);
     if (!success) {
       return NextResponse.json(
         { success: false, message: "ไม่พบผู้ใช้หรือลบไม่สำเร็จ" },

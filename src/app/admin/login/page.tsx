@@ -141,7 +141,7 @@ export default function AdminLoginPage() {
               autoFocus
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="เช่น kitsvcadmin"
+              placeholder="ชื่อผู้ใช้หรืออีเมลแอดมิน"
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-mono"
             />
           </div>

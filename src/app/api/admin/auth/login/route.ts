@@ -31,9 +31,9 @@ export async function POST(req: NextRequest) {
       token: result.token,
     });
 
-    // Set secure admin cookie
+    // Set secure admin cookie with httpOnly to prevent XSS cookie theft
     response.cookies.set("it_academy_admin_token", result.token || "", {
-      httpOnly: false,
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60, // 7 days

@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllSessions, deleteSession, getAllOtps } from "@/lib/server-db";
+import { getAllSessionsSafe, deleteSession, getAllOtpsSafe } from "@/lib/server-db";
+import { verifyAdminAuth } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const sessions = await getAllSessions();
-    const otps = await getAllOtps();
+    // 1. Mandatory Admin Authentication Gate
+    const auth = await verifyAdminAuth(req);
+    if (!auth.authenticated) {
+      return auth.response;
+    }
+
+    // 2. Safe Retrieval: Plaintext session tokens and OTP codes are masked
+    const sessions = await getAllSessionsSafe();
+    const otps = await getAllOtpsSafe();
+
     return NextResponse.json({
       success: true,
       sessions,
@@ -23,20 +32,26 @@ export async function GET() {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const token = searchParams.get("token");
+    // 1. Mandatory Admin Authentication Gate
+    const auth = await verifyAdminAuth(req);
+    if (!auth.authenticated) {
+      return auth.response;
+    }
 
-    if (!token) {
+    const { searchParams } = new URL(req.url);
+    const identifier = searchParams.get("token") || searchParams.get("id");
+
+    if (!identifier) {
       return NextResponse.json(
-        { success: false, message: "กรุณาระบุ token ที่ต้องการยกเลิก" },
+        { success: false, message: "กรุณาระบุรหัสเซสชันที่ต้องการยกเลิก" },
         { status: 400 }
       );
     }
 
-    const deleted = await deleteSession(token);
+    const deleted = await deleteSession(identifier);
     return NextResponse.json({
       success: deleted,
-      message: deleted ? "ยกเลิกเซสชันสำเร็จ" : "ไม่พบเซสชันดังกล่าว",
+      message: deleted ? "ยกเลิกเซสชันสำเร็จ" : "ไม่พบเซสชันดังกล่าว หรือหมดอายุแล้ว",
     });
   } catch (error) {
     console.error("Admin delete session error:", error);

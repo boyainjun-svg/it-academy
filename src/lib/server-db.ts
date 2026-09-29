@@ -93,9 +93,9 @@ function getInitialSeedUsers(): DbUser[] {
   return [
     {
       id: "usr_kitsvcadmin",
-      name: "kitsvcadmin",
+      name: process.env.ADMIN_USERNAME || "kitsvcadmin",
       email: "kitsvcadmin@itacademy.ac.th",
-      passwordHash: hashPassword("kitsvc2570", "salt_kitsvcadmin"),
+      passwordHash: hashPassword(process.env.ADMIN_PASSWORD || "kitsvc2570", "salt_kitsvcadmin"),
       salt: "salt_kitsvcadmin",
       institution: "ศูนย์เทคโนโลยีสารสนเทศ อาชีวศึกษา",
       department: "ฝ่ายบริหารจัดการระบบแอดมินและการสอน",
@@ -598,6 +598,24 @@ export async function deleteUser(id: string): Promise<boolean> {
   return true;
 }
 
+// -------------------------------------------------------------
+// Safe Session & OTP Masking Utilities (Prevent Token & OTP Leakage)
+// -------------------------------------------------------------
+
+export function hashSessionId(token: string): string {
+  return "sid_" + crypto.createHash("sha256").update(token).digest("hex").slice(0, 16);
+}
+
+export function maskToken(token: string): string {
+  if (!token || token.length < 10) return "******";
+  return token.slice(0, 8) + "..." + token.slice(-4);
+}
+
+export function maskOtpCode(code: string): string {
+  if (!code || code.length < 4) return "******";
+  return "•••" + code.slice(-3);
+}
+
 export async function getAllSessions(): Promise<
   (SessionRecord & { user?: { name: string; email: string; institution: string } })[]
 > {
@@ -627,17 +645,65 @@ export async function getAllSessions(): Promise<
   });
 }
 
-export async function deleteSession(token: string): Promise<boolean> {
+/**
+ * Returns session list sanitized for admin UI/API.
+ * Raw tokens are replaced with safe session hashes and masked preview strings.
+ */
+export async function getAllSessionsSafe(): Promise<
+  {
+    id: string;
+    token: string;
+    tokenMasked: string;
+    userId: string;
+    expiresAt: number;
+    user?: { name: string; email: string; institution: string };
+  }[]
+> {
+  const sessions = await getAllSessions();
+  const now = Date.now();
+  return sessions
+    .filter((s) => s.expiresAt > now)
+    .map((s) => {
+      const sid = hashSessionId(s.token);
+      return {
+        id: sid,
+        token: sid, // Safe session identifier, never the raw secret token
+        tokenMasked: maskToken(s.token),
+        userId: s.userId,
+        expiresAt: s.expiresAt,
+        user: s.user,
+      };
+    });
+}
+
+/**
+ * Revokes a session either by exact token or by hashed session ID (sid_...).
+ */
+export async function deleteSession(identifier: string): Promise<boolean> {
+  const cleanId = identifier.trim();
   const mongo = await getMongoDb();
   if (mongo) {
     await ensureMongoSeed(mongo);
-    const result = await mongo.collection("sessions").deleteOne({ token });
-    return (result.deletedCount ?? 0) > 0;
+    // Direct match on raw token
+    const directResult = await mongo.collection("sessions").deleteOne({ token: cleanId });
+    if ((directResult.deletedCount ?? 0) > 0) return true;
+
+    // Check by hashed session ID
+    const allSessions = (await mongo.collection("sessions").find({}).toArray()) as unknown as (SessionRecord & { _id: any })[];
+    for (const s of allSessions) {
+      if (hashSessionId(s.token) === cleanId) {
+        await mongo.collection("sessions").deleteOne({ _id: s._id });
+        return true;
+      }
+    }
+    return false;
   }
 
   const db = ensureDbFile();
   const beforeCount = db.sessions.length;
-  db.sessions = db.sessions.filter((s) => s.token !== token);
+  db.sessions = db.sessions.filter(
+    (s) => s.token !== cleanId && hashSessionId(s.token) !== cleanId
+  );
   saveDb(db);
   return db.sessions.length < beforeCount;
 }
@@ -652,6 +718,29 @@ export async function getAllOtps(): Promise<OtpRecord[]> {
 
   const db = ensureDbFile();
   return db.otps;
+}
+
+/**
+ * Returns pending OTP list with codes securely masked.
+ */
+export async function getAllOtpsSafe(): Promise<
+  {
+    email: string;
+    code: string;
+    expiresAt: number;
+    createdAt: number;
+  }[]
+> {
+  const otps = await getAllOtps();
+  const now = Date.now();
+  return otps
+    .filter((o) => o.expiresAt > now)
+    .map((o) => ({
+      email: o.email,
+      code: maskOtpCode(o.code),
+      expiresAt: o.expiresAt,
+      createdAt: o.createdAt,
+    }));
 }
 
 export async function getAdminStats() {
@@ -768,8 +857,14 @@ export async function loginAdmin(
   const cleanUsername = username.trim().toLowerCase();
   const mongo = await getMongoDb();
 
-  // 1. Specific kitsvcadmin / kitsvc2570 credential gate
-  if (cleanUsername === "kitsvcadmin" && password === "kitsvc2570") {
+  // 1. Configurable master admin credential gate (supports ADMIN_USERNAME & ADMIN_PASSWORD env vars)
+  const masterAdminUser = (process.env.ADMIN_USERNAME || "kitsvcadmin").toLowerCase().trim();
+  const masterAdminPass = process.env.ADMIN_PASSWORD || "kitsvc2570";
+
+  if (
+    (cleanUsername === masterAdminUser || cleanUsername === "kitsvcadmin@itacademy.ac.th") &&
+    password === masterAdminPass
+  ) {
     let target: DbUser | null = null;
     const token = "admin_sess_" + crypto.randomUUID();
 
@@ -778,18 +873,18 @@ export async function loginAdmin(
       target = (await mongo.collection("users").findOne({
         $or: [
           { email: "kitsvcadmin@itacademy.ac.th" },
-          { name: "kitsvcadmin" },
+          { name: masterAdminUser },
           { id: "usr_kitsvcadmin" },
         ],
       }, { projection: { _id: 0 } })) as unknown as DbUser | null;
 
       if (!target) {
         const salt = "salt_kitsvcadmin";
-        const passwordHash = hashPassword("kitsvc2570", salt);
+        const passwordHash = hashPassword(masterAdminPass, salt);
         const now = new Date().toISOString();
         const newAdmin: DbUser = {
           id: "usr_kitsvcadmin",
-          name: "kitsvcadmin",
+          name: masterAdminUser,
           email: "kitsvcadmin@itacademy.ac.th",
           passwordHash,
           salt,
@@ -814,7 +909,7 @@ export async function loginAdmin(
       const { passwordHash: _, salt: __, ...safeAdmin } = target;
       return {
         success: true,
-        message: "เข้าสู่ระบบแอดมินสำเร็จ ยินดีต้อนรับ kitsvcadmin",
+        message: "เข้าสู่ระบบแอดมินสำเร็จ ยินดีต้อนรับผู้ดูแลระบบสูงสุด",
         adminUser: safeAdmin,
         token,
       };
@@ -824,17 +919,17 @@ export async function loginAdmin(
     target = db.users.find(
       (u) =>
         u.email.toLowerCase() === "kitsvcadmin@itacademy.ac.th" ||
-        u.name.toLowerCase() === "kitsvcadmin" ||
+        u.name.toLowerCase() === masterAdminUser ||
         u.id === "usr_kitsvcadmin"
     ) || null;
 
     if (!target) {
       const salt = "salt_kitsvcadmin";
-      const passwordHash = hashPassword("kitsvc2570", salt);
+      const passwordHash = hashPassword(masterAdminPass, salt);
       const now = new Date().toISOString();
       const newAdmin: DbUser = {
         id: "usr_kitsvcadmin",
-        name: "kitsvcadmin",
+        name: masterAdminUser,
         email: "kitsvcadmin@itacademy.ac.th",
         passwordHash,
         salt,
@@ -860,7 +955,7 @@ export async function loginAdmin(
     const { passwordHash: _, salt: __, ...safeAdmin } = target;
     return {
       success: true,
-      message: "เข้าสู่ระบบแอดมินสำเร็จ ยินดีต้อนรับ kitsvcadmin",
+      message: "เข้าสู่ระบบแอดมินสำเร็จ ยินดีต้อนรับผู้ดูแลระบบสูงสุด",
       adminUser: safeAdmin,
       token,
     };
