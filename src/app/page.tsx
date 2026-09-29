@@ -113,7 +113,7 @@ export default function Home() {
     {
       icon: BookOpen,
       title: "หลักสูตรครบวงจร",
-      description: "ครอบคลุมทั้ง 7 สายงาน IT และ 7 ภาษาโปรแกรมมิ่งยอดนิยมระดับสากล"
+      description: "ครอบคลุมทั้ง 7 สายงาน IT และ 15 ภาษาโปรแกรมมิ่งยอดนิยมระดับสากล"
     },
     {
       icon: Trophy,
@@ -270,6 +270,86 @@ export default function Home() {
       gradient: "from-blue-500 to-sky-600",
       iconBg: "bg-blue-500/10",
       iconColor: "text-blue-500"
+    },
+    {
+      id: "ruby",
+      title: "Ruby & Object-Oriented Design",
+      description: "Ruby 3, Everything is an Object, Blocks/Procs/Lambdas, Metaprogramming และ Rails",
+      lessons: 9,
+      emoji: "💎",
+      gradient: "from-rose-500 to-red-700",
+      iconBg: "bg-rose-500/10",
+      iconColor: "text-rose-500"
+    },
+    {
+      id: "sql",
+      title: "Advanced SQL & Query Engineering",
+      description: "Window Functions, CTEs, Index Optimization, EXPLAIN ANALYZE และ Query Tuning",
+      lessons: 9,
+      emoji: "🗄️",
+      gradient: "from-sky-500 to-blue-700",
+      iconBg: "bg-sky-500/10",
+      iconColor: "text-sky-500"
+    },
+    {
+      id: "kotlin",
+      title: "Kotlin & Modern Architecture",
+      description: "Kotlin 2.0, Null Safety, Coroutines & Flow, Ktor และ Jetpack Compose Architecture",
+      lessons: 9,
+      emoji: "🟣",
+      gradient: "from-purple-500 to-violet-700",
+      iconBg: "bg-purple-500/10",
+      iconColor: "text-purple-500"
+    },
+    {
+      id: "rust",
+      title: "Rust Systems & Memory Safety",
+      description: "Ownership, Borrow Checker, Zero-Cost Abstractions, Concurrency และ Tokio Async",
+      lessons: 9,
+      emoji: "🦀",
+      gradient: "from-orange-500 to-amber-700",
+      iconBg: "bg-orange-500/10",
+      iconColor: "text-orange-500"
+    },
+    {
+      id: "scala",
+      title: "Scala 3 & Big Data Engineering",
+      description: "Scala 3, Functional Programming, Akka/Pekko Actors, Apache Spark และ Typelevel Ecosystem",
+      lessons: 9,
+      emoji: "🔴",
+      gradient: "from-red-500 to-rose-700",
+      iconBg: "bg-red-500/10",
+      iconColor: "text-red-500"
+    },
+    {
+      id: "dart",
+      title: "Dart & Asynchronous Architecture",
+      description: "Modern Dart 3, Sound Null Safety, Isolates, Streams, Records และ Patterns",
+      lessons: 9,
+      emoji: "🎯",
+      gradient: "from-cyan-500 to-blue-600",
+      iconBg: "bg-cyan-500/10",
+      iconColor: "text-cyan-500"
+    },
+    {
+      id: "matlab",
+      title: "MATLAB & Numerical Simulation",
+      description: "Matrix Operations, Vectorization, Simulink, Signal Processing และ Digital Filtering",
+      lessons: 9,
+      emoji: "📊",
+      gradient: "from-amber-500 to-blue-700",
+      iconBg: "bg-amber-500/10",
+      iconColor: "text-amber-500"
+    },
+    {
+      id: "shell",
+      title: "Shell Scripting & Linux Automation",
+      description: "Bash, POSIX, Pipelines, Awk/Sed, Process Management, Cron/Systemd และ CI/CD",
+      lessons: 9,
+      emoji: "🐚",
+      gradient: "from-emerald-500 to-teal-700",
+      iconBg: "bg-emerald-500/10",
+      iconColor: "text-emerald-500"
     }
   ];
 
@@ -344,8 +424,8 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto pt-8 border-t border-slate-200 dark:border-dark-800 fade-up">
             {[
-              { label: "14 หลักสูตร", value: "ครอบคลุมสายงาน & ภาษา" },
-              { label: "126 บทเรียน", value: "เนื้อหาเชิงลึกระดับสากล" },
+              { label: "22 หลักสูตร", value: "7 สายงาน & 15 ภาษา" },
+              { label: "198 บทเรียน", value: "เนื้อหาเชิงลึกระดับสากล" },
               { label: "เขียนโค้ดได้จริง", value: "Interactive Compiler" },
               { label: "ฟรี 100%", value: "เพื่อการศึกษาไทย" }
             ].map((stat, i) => (
@@ -406,7 +486,7 @@ export default function Home() {
                       : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
-                  🏢 สายงาน IT (7)
+                  🏢 สายงาน IT ({coreCoursesList.length})
                 </button>
                 <button
                   onClick={() => setHomeCategory("language")}
@@ -416,7 +496,7 @@ export default function Home() {
                       : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
-                  💻 ภาษาโปรแกรมมิ่ง (7)
+                  💻 ภาษาโปรแกรมมิ่ง ({languageCoursesList.length})
                 </button>
               </div>
 
@@ -424,7 +504,7 @@ export default function Home() {
                 href="/courses"
                 className="hidden md:flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold text-sm transition-colors"
               >
-                ดูทั้งหมด 14 หลักสูตร <ArrowRight className="w-4 h-4 ml-1" />
+                ดูทั้งหมด {coreCoursesList.length + languageCoursesList.length} หลักสูตร <ArrowRight className="w-4 h-4 ml-1" />
               </Link>
             </div>
           </div>

@@ -114,6 +114,54 @@ const courseHeroThemes: Record<
     accentColor: "text-blue-400",
     badgeBorder: "border-blue-400/30 bg-blue-950/50 text-blue-100",
   },
+  ruby: {
+    gradientClass: "from-rose-700 via-red-800 to-slate-900 dark:from-rose-950 dark:via-red-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #be123c 0%, #881337 45%, #0f172a 100%)",
+    accentColor: "text-rose-400",
+    badgeBorder: "border-rose-400/30 bg-rose-950/50 text-rose-100",
+  },
+  sql: {
+    gradientClass: "from-sky-700 via-blue-800 to-slate-900 dark:from-sky-950 dark:via-blue-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #0284c7 0%, #0369a1 45%, #0f172a 100%)",
+    accentColor: "text-sky-400",
+    badgeBorder: "border-sky-400/30 bg-sky-950/50 text-sky-100",
+  },
+  kotlin: {
+    gradientClass: "from-purple-700 via-violet-800 to-slate-900 dark:from-purple-950 dark:via-violet-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #7c3aed 0%, #9333ea 45%, #0f172a 100%)",
+    accentColor: "text-purple-400",
+    badgeBorder: "border-purple-400/30 bg-purple-950/50 text-purple-100",
+  },
+  rust: {
+    gradientClass: "from-amber-700 via-orange-800 to-slate-900 dark:from-amber-950 dark:via-orange-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #c2410c 0%, #7c2d12 45%, #0f172a 100%)",
+    accentColor: "text-amber-400",
+    badgeBorder: "border-amber-400/30 bg-amber-950/50 text-amber-100",
+  },
+  scala: {
+    gradientClass: "from-red-700 via-rose-800 to-slate-900 dark:from-red-950 dark:via-rose-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #dc2626 0%, #991b1b 45%, #0f172a 100%)",
+    accentColor: "text-red-400",
+    badgeBorder: "border-red-400/30 bg-red-950/50 text-red-100",
+  },
+  dart: {
+    gradientClass: "from-sky-700 via-cyan-800 to-slate-900 dark:from-sky-950 dark:via-cyan-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #0284c7 0%, #0e7490 45%, #0f172a 100%)",
+    accentColor: "text-cyan-400",
+    badgeBorder: "border-cyan-400/30 bg-cyan-950/50 text-cyan-100",
+  },
+  matlab: {
+    gradientClass: "from-amber-700 via-blue-900 to-slate-900 dark:from-amber-950 dark:via-blue-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #d97706 0%, #1e3a8a 45%, #0f172a 100%)",
+    accentColor: "text-amber-400",
+    badgeBorder: "border-amber-400/30 bg-amber-950/50 text-amber-100",
+  },
+  shell: {
+    gradientClass: "from-emerald-700 via-teal-800 to-slate-900 dark:from-emerald-950 dark:via-teal-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #047857 0%, #0f766e 45%, #0f172a 100%)",
+    accentColor: "text-emerald-400",
+    badgeBorder: "border-emerald-400/30 bg-emerald-950/50 text-emerald-100",
+  },
 };
 
 const defaultTheme = {

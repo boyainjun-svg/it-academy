@@ -1,18 +1,21 @@
 export interface CodeChallenge {
-  id: string;
-  title: string;
+  id?: string;
+  title?: string;
   description: string;
-  initialCode: string;
+  initialCode?: string;
+  startingCode?: string;
+  solution?: string;
   expectedOutput?: string;
   hint?: string;
-  language: string;
+  language?: string;
 }
 
 export interface QuizQuestion {
-  id: string;
+  id?: string;
   question: string;
   options: string[];
-  correctAnswer: number;
+  correctAnswer?: number;
+  correctOption?: number;
   explanation: string;
 }
 
@@ -41,13 +44,16 @@ export interface Lesson {
   duration: string;
   level: "เริ่มต้น" | "ปานกลาง" | "ขั้นสูง";
   content: string;
-  codeExample?: {
-    language: string;
-    code: string;
-    description: string;
-  };
-  challenge?: CodeChallenge;
+  codeExample?:
+    | string
+    | {
+        language: string;
+        code: string;
+        description: string;
+      };
+  challenge?: string | CodeChallenge;
   quiz?: QuizQuestion[];
+  quizzes?: QuizQuestion[];
   labGuide?: LabGuide;
 }
 

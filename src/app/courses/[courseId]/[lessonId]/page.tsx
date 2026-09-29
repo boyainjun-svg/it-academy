@@ -501,8 +501,12 @@ export default function LessonPage({
 
   useEffect(() => {
     if (lesson) {
-      if (lesson.challenge?.initialCode) {
+      if (typeof lesson.challenge === "object" && lesson.challenge?.initialCode) {
         setCode(lesson.challenge.initialCode);
+      } else if (typeof lesson.challenge === "object" && lesson.challenge?.startingCode) {
+        setCode(lesson.challenge.startingCode);
+      } else if (typeof lesson.codeExample === "string") {
+        setCode(lesson.codeExample);
       } else if (lesson.codeExample?.code) {
         setCode(lesson.codeExample.code);
       }
@@ -697,12 +701,45 @@ export default function LessonPage({
     setCiscoInput("");
   };
 
-  const editorLanguage =
-    lesson.codeExample?.language === "cpp"
-      ? "cpp"
-      : lesson.codeExample?.language === "bash"
-      ? "shell"
-      : lesson.codeExample?.language || "javascript";
+  const effectiveQuiz = useMemo(() => {
+    if (!lesson) return [];
+    const list = lesson.quiz || lesson.quizzes || [];
+    return list.map((q, idx) => ({
+      id: q.id || `${lesson.id}-q${idx + 1}`,
+      question: q.question,
+      options: q.options,
+      correctAnswer: q.correctAnswer ?? q.correctOption ?? 0,
+      explanation: q.explanation,
+    }));
+  }, [lesson]);
+
+  const editorLanguage = useMemo(() => {
+    if (typeof lesson?.codeExample === "object" && lesson?.codeExample?.language) {
+      if (lesson.codeExample.language === "bash") return "shell";
+      return lesson.codeExample.language;
+    }
+    const map: Record<string, string> = {
+      cpp: "cpp",
+      python: "python",
+      csharp: "csharp",
+      php: "php",
+      go: "go",
+      java: "java",
+      typescript: "typescript",
+      ruby: "ruby",
+      sql: "sql",
+      database: "sql",
+      kotlin: "kotlin",
+      rust: "rust",
+      scala: "scala",
+      dart: "dart",
+      matlab: "matlab",
+      shell: "shell",
+      webdev: "html",
+      gamedev: "javascript",
+    };
+    return map[courseId] || "javascript";
+  }, [lesson, courseId]);
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50 dark:bg-dark-950 overflow-hidden">
@@ -770,14 +807,14 @@ export default function LessonPage({
             </div>
 
             {/* Quiz Section */}
-            {lesson.quiz && lesson.quiz.length > 0 && (
+            {effectiveQuiz.length > 0 && (
               <div className="bg-slate-50 dark:bg-dark-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700/80 mb-10">
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center">
                   <CheckCircle className="w-5 h-5 mr-2 text-green-500" />
                   แบบทดสอบตรวจสอบความเข้าใจ
                 </h3>
                 <div className="space-y-6">
-                  {lesson.quiz.map((q, qIdx) => (
+                  {effectiveQuiz.map((q, qIdx) => (
                     <div key={q.id}>
                       <p className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">
                         {qIdx + 1}. {q.question}
@@ -1200,13 +1237,13 @@ export default function LessonPage({
                   <div>
                     <h4 className="text-white font-bold text-sm mb-1 flex items-center gap-2">
                       <span className="text-amber-400">🎯 โจทย์ท้าทาย:</span>
-                      {lesson.challenge.title}
+                      {typeof lesson.challenge === "object" ? lesson.challenge.title || "ฝึกปฏิบัติจริง" : "ฝึกปฏิบัติจริง"}
                     </h4>
                     <p className="text-slate-400 text-xs">
-                      {lesson.challenge.description}
+                      {typeof lesson.challenge === "string" ? lesson.challenge : lesson.challenge.description}
                     </p>
                   </div>
-                  {lesson.challenge.hint && (
+                  {typeof lesson.challenge === "object" && lesson.challenge.hint && (
                     <button
                       onClick={() => setShowHint(!showHint)}
                       className="text-primary-400 hover:text-primary-300 p-1 flex items-center text-xs gap-1 font-semibold"
@@ -1216,7 +1253,7 @@ export default function LessonPage({
                     </button>
                   )}
                 </div>
-                {showHint && lesson.challenge.hint && (
+                {showHint && typeof lesson.challenge === "object" && lesson.challenge.hint && (
                   <div className="mt-2 p-2.5 bg-primary-950/50 border border-primary-800/80 rounded-xl text-xs text-primary-200">
                     <strong>💡 Hint:</strong> {lesson.challenge.hint}
                   </div>
@@ -1270,19 +1307,27 @@ export default function LessonPage({
           >
             <div className="flex justify-between items-center mb-3">
               <span className="text-xs text-slate-400 font-bold uppercase">
-                ภาษา: {lesson.codeExample?.language || "Text"}
+                ภาษา: {typeof lesson.codeExample === "object" ? lesson.codeExample?.language : courseId}
               </span>
               <button
-                onClick={() => copyCode(lesson.codeExample?.code || "")}
+                onClick={() =>
+                  copyCode(
+                    typeof lesson.codeExample === "string"
+                      ? lesson.codeExample
+                      : lesson.codeExample?.code || ""
+                  )
+                }
                 className="flex items-center gap-1 text-xs text-primary-400 hover:text-primary-300"
               >
                 <Copy className="w-3.5 h-3.5" /> คัดลอกโค้ด
               </button>
             </div>
             <pre className="text-slate-200 bg-slate-900/90 p-4 rounded-2xl border border-slate-800 whitespace-pre-wrap">
-              {lesson.codeExample?.code || "ไม่มีโค้ดตัวอย่างในบทเรียนนี้"}
+              {typeof lesson.codeExample === "string"
+                ? lesson.codeExample
+                : lesson.codeExample?.code || "ไม่มีโค้ดตัวอย่างในบทเรียนนี้"}
             </pre>
-            {lesson.codeExample?.description && (
+            {typeof lesson.codeExample === "object" && lesson.codeExample?.description && (
               <p className="mt-4 text-xs text-slate-400 border-t border-slate-800 pt-3">
                 📝 <strong>คำอธิบาย:</strong> {lesson.codeExample.description}
               </p>

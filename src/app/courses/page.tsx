@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { courses } from "@/data/courses";
+import { courses, coreCourses, languageCourses } from "@/data/courses";
 import { Search, BookOpen, Tag, Sparkles, Code2, Briefcase, ChevronRight } from "lucide-react";
 
 const courseCardThemes: Record<string, string> = {
@@ -22,6 +22,14 @@ const courseCardThemes: Record<string, string> = {
   java: "linear-gradient(135deg, #dc2626 0%, #ea580c 50%, #b45309 100%)",
   cpp: "linear-gradient(135deg, #2563eb 0%, #4338ca 50%, #0f172a 100%)",
   typescript: "linear-gradient(135deg, #2563eb 0%, #0284c7 50%, #4338ca 100%)",
+  ruby: "linear-gradient(135deg, #e11d48 0%, #be123c 50%, #881337 100%)",
+  sql: "linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%)",
+  kotlin: "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #f97316 100%)",
+  rust: "linear-gradient(135deg, #ea580c 0%, #c2410c 50%, #431407 100%)",
+  scala: "linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #7f1d1d 100%)",
+  dart: "linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #0369a1 100%)",
+  matlab: "linear-gradient(135deg, #d97706 0%, #b45309 50%, #1e3a8a 100%)",
+  shell: "linear-gradient(135deg, #047857 0%, #0f766e 50%, #0f172a 100%)",
 };
 
 export default function CoursesPage() {
@@ -130,7 +138,7 @@ export default function CoursesPage() {
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-100 dark:bg-primary-950/60 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-4 border border-primary-200 dark:border-primary-800">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>หลักสูตรมาตรฐานเข้มข้น 14 สาขาวิชา</span>
+            <span>หลักสูตรมาตรฐานเข้มข้น {courses.length} สาขาวิชา</span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold gradient-text mb-4">
             หลักสูตรทั้งหมด
@@ -154,7 +162,7 @@ export default function CoursesPage() {
               <Sparkles className="w-4 h-4" />
               <span>ทุกหลักสูตร</span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-white/20 dark:bg-white/10 font-bold">
-                14
+                {courses.length}
               </span>
             </button>
 
@@ -169,7 +177,7 @@ export default function CoursesPage() {
               <Briefcase className="w-4 h-4 text-emerald-500" />
               <span>สายงานวิชาชีพ IT</span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold">
-                7
+                {coreCourses.length}
               </span>
             </button>
 
@@ -184,7 +192,7 @@ export default function CoursesPage() {
               <Code2 className="w-4 h-4 text-blue-500" />
               <span>ภาษาโปรแกรมมิ่ง</span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-700 dark:text-blue-300 font-bold">
-                7
+                {languageCourses.length}
               </span>
             </button>
           </div>
@@ -286,7 +294,7 @@ export default function CoursesPage() {
                       หลักสูตรภาษาโปรแกรมมิ่งยอดนิยม
                     </h2>
                     <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                      เจาะลึกภาษาโปรแกรมมิ่งระดับแนวหน้าของโลก C#, Python, Modern PHP, Go, Java 21, Modern C++ และ TypeScript
+                      เจาะลึก 15 ภาษาโปรแกรมมิ่งระดับแนวหน้าของโลก ทั้ง Systems, Backend, Mobile, Big Data, Scientific Computing และ DevOps Automation
                     </p>
                   </div>
                   <span className="self-start sm:self-auto text-xs font-semibold px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">

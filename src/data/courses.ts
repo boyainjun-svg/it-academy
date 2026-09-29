@@ -15,6 +15,14 @@ import { golangCourse } from "./courses/golang";
 import { javaCourse } from "./courses/java";
 import { cppCourse } from "./courses/cpp";
 import { typescriptCourse } from "./courses/typescript";
+import { rubyCourse } from "./courses/ruby";
+import { sqlCourse } from "./courses/sql";
+import { kotlinCourse } from "./courses/kotlin";
+import { rustCourse } from "./courses/rust";
+import { scalaCourse } from "./courses/scala";
+import { dartCourse } from "./courses/dart";
+import { matlabCourse } from "./courses/matlab";
+import { shellCourse } from "./courses/shell";
 
 export const coreCourses: Course[] = [
   iotCourse,
@@ -34,6 +42,14 @@ export const languageCourses: Course[] = [
   javaCourse,
   cppCourse,
   typescriptCourse,
+  rubyCourse,
+  sqlCourse,
+  kotlinCourse,
+  rustCourse,
+  scalaCourse,
+  dartCourse,
+  matlabCourse,
+  shellCourse,
 ];
 
 export const courses: Course[] = [

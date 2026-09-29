@@ -297,6 +297,83 @@ const languageMetadata: Record<
     compilerFlags: "tsc --strict --noImplicitAny --target ES2022",
     localInstallHint: "bun init && bun run index.ts (or npx tsx index.ts)",
   },
+  ruby: {
+    name: "Ruby 3.3 (YJIT)",
+    runtime: "CRuby 3.3.0 + YJIT",
+    cli: "ruby -W:deprecated main.rb",
+    icon: "💎",
+    version: "ruby 3.3.0 (2023-12-25 revision 5124f9ac75) +YJIT [x86_64-linux]",
+    memoryMetric: "RSS: 18.5 MB | YJIT Executed Blocks: 84.2%",
+    engine: "YJIT (In-Process JIT Compiler) & Garbage Collector",
+    compilerFlags: "--yjit --yjit-exec-mem-size=64",
+    localInstallHint: "ruby main.rb (or bundle exec rails server)",
+  },
+  kotlin: {
+    name: "Kotlin 2.0",
+    runtime: "Kotlin/JVM (JRE 21 HotSpot)",
+    cli: "kotlinc main.kt -include-runtime -d app.jar && java -jar app.jar",
+    icon: "🟣",
+    version: "kotlinc-jvm 2.0.0 (JRE 21.0.3+9-LTS)",
+    memoryMetric: "JVM Heap: 54 MB | Coroutines Active: 8",
+    engine: "K2 Compiler Frontend & JVM Bytecode Generator",
+    compilerFlags: "-jvm-target 21 -opt-in=kotlin.RequiresOptIn",
+    localInstallHint: "kotlinc main.kt -include-runtime -d app.jar && java -jar app.jar",
+  },
+  rust: {
+    name: "Rust 1.78",
+    runtime: "rustc 1.78.0 (LLVM 18)",
+    cli: "cargo run --release",
+    icon: "🦀",
+    version: "rustc 1.78.0 (9b00956e5 2024-04-29)",
+    memoryMetric: "Stack: 4 MB | RSS: 540 KB (Zero-Cost Abstractions, No GC)",
+    engine: "LLVM Code Generation & Borrow Checker Verification",
+    compilerFlags: "--release -C opt-level=3 -C lto=fat",
+    localInstallHint: "cargo new my_app && cd my_app && cargo run",
+  },
+  scala: {
+    name: "Scala 3.4",
+    runtime: "Scala 3.4.1 (Java 21 Virtual Machine)",
+    cli: "scala-cli run Main.scala",
+    icon: "🔴",
+    version: "Scala code runner version 3.4.1 -- Copyright 2002-2024, LAMP/EPFL",
+    memoryMetric: "JVM Heap: 72 MB | Akka/Pekko Actors: 6",
+    engine: "Tasty Inspector & Dotty Modern Type Checker",
+    compilerFlags: "-deprecation -feature -Xfatal-warnings",
+    localInstallHint: "scala-cli run Main.scala (or sbt run)",
+  },
+  dart: {
+    name: "Dart 3.4",
+    runtime: "Dart VM 3.4.0 (AOT/JIT)",
+    cli: "dart run bin/main.dart",
+    icon: "🎯",
+    version: "Dart SDK version: 3.4.0 (stable) on 'linux_x64'",
+    memoryMetric: "Dart Isolate Heap: 12.8 MB | Microtasks: 0 queued",
+    engine: "Dart VM Snapshots & Generational Garbage Collector",
+    compilerFlags: "--sound-null-safety --enable-asserts",
+    localInstallHint: "dart create my_app && cd my_app && dart run",
+  },
+  matlab: {
+    name: "MATLAB R2024a",
+    runtime: "MATLAB Engine / GNU Octave 9.1",
+    cli: "matlab -batch \"run('script.m')\"",
+    icon: "📊",
+    version: "MATLAB Version 24.1.0 (R2024a) Update 1 / Octave 9.1.0",
+    memoryMetric: "Workspace Variables: 3.2 MB | BLAS/LAPACK Threads: 8",
+    engine: "MathWorks JIT Acceleration & BLAS/LAPACK Vector Unit",
+    compilerFlags: "-nojvm -nodisplay -nosplash -batch",
+    localInstallHint: "octave --no-gui script.m (or matlab -batch \"script\")",
+  },
+  shell: {
+    name: "GNU Bash 5.2",
+    runtime: "GNU Bash 5.2.21(1)-release",
+    cli: "bash -e script.sh",
+    icon: "🐚",
+    version: "GNU bash, version 5.2.21(1)-release (x86_64-pc-linux-gnu)",
+    memoryMetric: "Resident Size: 1.4 MB | Subshells Spawned: 2",
+    engine: "Linux Kernel POSIX Syscalls & GNU Coreutils",
+    compilerFlags: "set -euo pipefail (Defensive Shell Mode)",
+    localInstallHint: "chmod +x script.sh && ./script.sh",
+  },
 };
 
 function extractLanguageStdout(rawCode: string, lang: string): string[] {
@@ -355,6 +432,55 @@ function extractLanguageStdout(rawCode: string, lang: string): string[] {
       if (match) {
         let val = match[1].trim();
         val = val.replace(/^[`"']|[`"']$/g, "");
+        if (val) extracted.push(val);
+      }
+    } else if (lang === "ruby" && /(?:puts|print|p)\s+(.*)/.test(trimmed)) {
+      const match = trimmed.match(/(?:puts|print|p)\s+(.*)/);
+      if (match) {
+        let val = match[1].trim();
+        val = val.replace(/^["']|["']$/g, "");
+        if (val) extracted.push(val);
+      }
+    } else if (lang === "kotlin" && /println\s*\((.*)\)/.test(trimmed)) {
+      const match = trimmed.match(/println\s*\((.*)\)/);
+      if (match) {
+        let val = match[1].trim();
+        val = val.replace(/^\$?["']|["']$/g, "");
+        if (val) extracted.push(val);
+      }
+    } else if (lang === "rust" && /(?:println!|print!)\s*\((.*)\)/.test(trimmed)) {
+      const match = trimmed.match(/(?:println!|print!)\s*\((.*)\)/);
+      if (match) {
+        let val = match[1].trim();
+        val = val.replace(/^["']|["']$/g, "");
+        if (val) extracted.push(val);
+      }
+    } else if (lang === "scala" && /println\s*\((.*)\)/.test(trimmed)) {
+      const match = trimmed.match(/println\s*\((.*)\)/);
+      if (match) {
+        let val = match[1].trim();
+        val = val.replace(/^s?["']|["']$/g, "");
+        if (val) extracted.push(val);
+      }
+    } else if (lang === "dart" && /print\s*\((.*)\)/.test(trimmed)) {
+      const match = trimmed.match(/print\s*\((.*)\)/);
+      if (match) {
+        let val = match[1].trim();
+        val = val.replace(/^["']|["']$/g, "");
+        if (val) extracted.push(val);
+      }
+    } else if (lang === "matlab" && /(?:disp|fprintf)\s*\((.*)\)/.test(trimmed)) {
+      const match = trimmed.match(/(?:disp|fprintf)\s*\((.*)\)/);
+      if (match) {
+        let val = match[1].trim();
+        val = val.replace(/^["']|["']$/g, "");
+        if (val) extracted.push(val);
+      }
+    } else if (lang === "shell" && /(?:echo|printf)\s+(.*)/.test(trimmed)) {
+      const match = trimmed.match(/(?:echo|printf)\s+(.*)/);
+      if (match) {
+        let val = match[1].trim();
+        val = val.replace(/^["']|["']$/g, "");
         if (val) extracted.push(val);
       }
     }
@@ -726,7 +852,7 @@ function LessonResultViewer({
   }
 
   // 2. DATABASE / SQL: Realistic Table Grid & Execution Plan
-  if (courseId === "database") {
+  if (courseId === "database" || courseId === "sql") {
     const isExplainQuery =
       code.toLowerCase().includes("explain") ||
       code.toLowerCase().includes("analyze") ||
@@ -1248,7 +1374,7 @@ function LessonResultViewer({
     );
   }
 
-  // 6. PROGRAMMING LANGUAGES (Python, C#, PHP, Go, Java, C++, TypeScript)
+  // 6. PROGRAMMING LANGUAGES
   if (
     courseId === "python" ||
     courseId === "csharp" ||
@@ -1256,7 +1382,14 @@ function LessonResultViewer({
     courseId === "go" ||
     courseId === "java" ||
     courseId === "cpp" ||
-    courseId === "typescript"
+    courseId === "typescript" ||
+    courseId === "ruby" ||
+    courseId === "kotlin" ||
+    courseId === "rust" ||
+    courseId === "scala" ||
+    courseId === "dart" ||
+    courseId === "matlab" ||
+    courseId === "shell"
   ) {
     return (
       <LanguageRuntimeViewer
