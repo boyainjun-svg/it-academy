@@ -5,6 +5,12 @@ const config: Config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/data/**/*.{js,ts,jsx,tsx}",
+  ],
+  safelist: [
+    {
+      pattern: /(from|to|via)-(green|emerald|blue|indigo|orange|amber|purple|violet|cyan|teal|red|rose|fuchsia|pink)-(400|500|600|700|800|900|950)/,
+    },
   ],
   darkMode: "class",
   theme: {

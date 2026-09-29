@@ -5,6 +5,16 @@ import Link from "next/link";
 import { courses } from "@/data/courses";
 import { Search, BookOpen, Tag, ArrowRight } from "lucide-react";
 
+const courseCardThemes: Record<string, string> = {
+  iot: "linear-gradient(135deg, #059669 0%, #0d9488 100%)",
+  network: "linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)",
+  webdev: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)",
+  database: "linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)",
+  mobile: "linear-gradient(135deg, #06b6d4 0%, #0d9488 100%)",
+  gamedev: "linear-gradient(135deg, #e11d48 0%, #be123c 100%)",
+  cybersecurity: "linear-gradient(135deg, #c026d3 0%, #db2777 100%)",
+};
+
 export default function CoursesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDifficulty, setFilterDifficulty] = useState("ทั้งหมด");
@@ -84,6 +94,7 @@ export default function CoursesPage() {
                 <div className="group h-full bg-white dark:bg-dark-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-primary-500/10 border border-slate-200 dark:border-slate-800 transition-all duration-300 transform hover:-translate-y-1 flex flex-col">
                   <div
                     className={`h-32 bg-gradient-to-r ${course.gradient} relative overflow-hidden shrink-0`}
+                    style={{ background: courseCardThemes[course.id] || "linear-gradient(135deg, #3b82f6, #6366f1)" }}
                   >
                     <div className="absolute inset-0 bg-black/10"></div>
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30"></div>

@@ -361,6 +361,8 @@ export default function LessonPage({
   const [showQuizResults, setShowQuizResults] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
+  const [executionCount, setExecutionCount] = useState(1);
+  const [isRunning, setIsRunning] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
@@ -556,20 +558,12 @@ export default function LessonPage({
   };
 
   const runCode = () => {
+    setIsRunning(true);
     setActiveTab("result");
-    if (
-      iframeRef.current &&
-      (lesson.codeExample?.language === "html" ||
-        lesson.codeExample?.language === "javascript")
-    ) {
-      const doc =
-        iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
-      if (doc) {
-        doc.open();
-        doc.write(code);
-        doc.close();
-      }
-    }
+    setExecutionCount((prev) => prev + 1);
+    setTimeout(() => {
+      setIsRunning(false);
+    }, 350);
   };
 
   const copyCode = (textToCopy: string) => {
@@ -899,8 +893,8 @@ export default function LessonPage({
               onClick={() => setActiveTab("lab")}
               className={`flex items-center px-4 py-3 text-xs md:text-sm font-bold whitespace-nowrap transition-colors ${
                 activeTab === "lab"
-                  ? "bg-slate-800 text-primary-400 border-t-2 border-primary-500"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border-t-2 border-transparent"
+                  ? "bg-slate-800 text-primary-300 border-t-2 border-primary-500 shadow-sm"
+                  : "text-slate-300 hover:text-white hover:bg-slate-800/60 border-t-2 border-transparent"
               }`}
             >
               <Wrench className="w-4 h-4 mr-1.5 text-amber-400" />
@@ -914,8 +908,8 @@ export default function LessonPage({
               onClick={() => setActiveTab("cisco")}
               className={`flex items-center px-4 py-3 text-xs md:text-sm font-bold whitespace-nowrap transition-colors ${
                 activeTab === "cisco"
-                  ? "bg-slate-800 text-primary-400 border-t-2 border-primary-500"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border-t-2 border-transparent"
+                  ? "bg-slate-800 text-primary-300 border-t-2 border-primary-500 shadow-sm"
+                  : "text-slate-300 hover:text-white hover:bg-slate-800/60 border-t-2 border-transparent"
               }`}
             >
               <Terminal className="w-4 h-4 mr-1.5 text-blue-400" />
@@ -927,8 +921,8 @@ export default function LessonPage({
             onClick={() => setActiveTab("code")}
             className={`flex items-center px-4 py-3 text-xs md:text-sm font-bold whitespace-nowrap transition-colors ${
               activeTab === "code"
-                ? "bg-slate-800 text-primary-400 border-t-2 border-primary-500"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border-t-2 border-transparent"
+                ? "bg-slate-800 text-primary-300 border-t-2 border-primary-500 shadow-sm"
+                : "text-slate-300 hover:text-white hover:bg-slate-800/60 border-t-2 border-transparent"
             }`}
           >
             <Code className="w-4 h-4 mr-1.5 text-emerald-400" />
@@ -939,8 +933,8 @@ export default function LessonPage({
             onClick={() => setActiveTab("example")}
             className={`flex items-center px-4 py-3 text-xs md:text-sm font-bold whitespace-nowrap transition-colors ${
               activeTab === "example"
-                ? "bg-slate-800 text-primary-400 border-t-2 border-primary-500"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border-t-2 border-transparent"
+                ? "bg-slate-800 text-primary-300 border-t-2 border-primary-500 shadow-sm"
+                : "text-slate-300 hover:text-white hover:bg-slate-800/60 border-t-2 border-transparent"
             }`}
           >
             <Terminal className="w-4 h-4 mr-1.5 text-purple-400" />
@@ -951,8 +945,8 @@ export default function LessonPage({
             onClick={() => setActiveTab("result")}
             className={`flex items-center px-4 py-3 text-xs md:text-sm font-bold whitespace-nowrap transition-colors ${
               activeTab === "result"
-                ? "bg-slate-800 text-primary-400 border-t-2 border-primary-500"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border-t-2 border-transparent"
+                ? "bg-slate-800 text-primary-300 border-t-2 border-primary-500 shadow-sm"
+                : "text-slate-300 hover:text-white hover:bg-slate-800/60 border-t-2 border-transparent"
             }`}
           >
             <Play className="w-4 h-4 mr-1.5 text-green-400" />
@@ -970,10 +964,20 @@ export default function LessonPage({
             </button>
             <button
               onClick={runCode}
-              className="flex items-center px-3 py-1.5 text-xs font-bold bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors shadow-sm"
+              disabled={isRunning}
+              className="flex items-center px-3 py-1.5 text-xs font-bold bg-green-600 hover:bg-green-500 active:scale-95 text-white rounded-lg transition-all shadow-sm disabled:opacity-75 cursor-pointer"
             >
-              <Play className="w-3 h-3 mr-1" />
-              รันโค้ด
+              {isRunning ? (
+                <>
+                  <span className="w-3 h-3 mr-1.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  กำลังรัน...
+                </>
+              ) : (
+                <>
+                  <Play className="w-3 h-3 mr-1 fill-white" />
+                  รันโค้ด
+                </>
+              )}
             </button>
 
             {/* Presets & Expand / Collapse Controls */}
@@ -1295,6 +1299,7 @@ export default function LessonPage({
               courseId={courseId}
               lessonId={lessonId}
               code={code}
+              executionCount={executionCount}
               iframeRef={iframeRef}
             />
           </div>

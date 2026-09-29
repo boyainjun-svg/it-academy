@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Play,
   Terminal,
@@ -24,16 +24,187 @@ interface LessonResultViewerProps {
   courseId: string;
   lessonId: string;
   code: string;
+  executionCount?: number;
   iframeRef?: React.RefObject<HTMLIFrameElement | null>;
+}
+
+function buildWebPreviewHtml(rawCode: string, courseId: string) {
+  if (!rawCode || !rawCode.trim()) {
+    return `<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #0b0f19; color: #94a3b8; text-align: center; padding: 20px; }
+    .icon { font-size: 40px; margin-bottom: 12px; }
+    h3 { color: #f1f5f9; margin: 0 0 8px 0; font-size: 18px; }
+    p { margin: 0; font-size: 14px; max-width: 380px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="icon">🚀</div>
+  <h3>พร้อมแสดงผลลัพธ์</h3>
+  <p>คลิกปุ่ม <strong>"รันโค้ด"</strong> สีเขียว เพื่อประมวลผลโค้ดและดูการแสดงผลแบบสดๆ</p>
+</body>
+</html>`;
+  }
+
+  const isFullHtml = /<(!doctype|html|head|body|div|p|h[1-6]|main|header|nav|section|table|button|canvas)/i.test(rawCode);
+
+  if (isFullHtml) {
+    let html = rawCode;
+    // Inject Tailwind CDN if it doesn't already have it
+    if (!html.includes("cdn.tailwindcss.com") && !html.includes("tailwind")) {
+      const tailwindScript = `<script src="https://cdn.tailwindcss.com"></script>\n<meta name="viewport" content="width=device-width, initial-scale=1.0">`;
+      if (html.includes("<head>")) {
+        html = html.replace("<head>", `<head>\n  ${tailwindScript}`);
+      } else if (html.includes("<html")) {
+        html = html.replace(/<html[^>]*>/, `$&<head>${tailwindScript}</head>`);
+      } else {
+        html = `${tailwindScript}\n${html}`;
+      }
+    }
+    return html;
+  }
+
+  // If it's a JavaScript snippet (functions, classes, console.log, algorithms)
+  return `<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #0b0f19;
+      color: #f1f5f9;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      padding: 16px;
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    #console-header {
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #1e293b;
+      font-size: 12px;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .console-line {
+      padding: 6px 10px;
+      margin-bottom: 4px;
+      border-radius: 8px;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      word-break: break-all;
+    }
+    .console-time {
+      color: #64748b;
+      font-size: 11px;
+      flex-shrink: 0;
+      user-select: none;
+    }
+    .console-val { flex-grow: 1; }
+    .console-log .console-val { color: #38bdf8; }
+    .console-info .console-val { color: #34d399; }
+    .console-warn .console-val { color: #f59e0b; }
+    .console-error .console-val { color: #f43f5e; font-weight: bold; }
+    .summary-box {
+      margin-top: 16px;
+      padding: 12px 14px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: #cbd5e1;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="console-header">
+    <span>⚡ V8 JavaScript Runtime Output</span>
+    <span class="badge">● Execution Finished (Exit 0)</span>
+  </div>
+  <div id="logs-container"></div>
+  <div id="summary"></div>
+
+  <script>
+    const container = document.getElementById('logs-container');
+    let logCount = 0;
+
+    function addLog(type, ...args) {
+      logCount++;
+      const row = document.createElement('div');
+      row.className = 'console-line console-' + type;
+      const time = new Date().toLocaleTimeString('th-TH');
+      
+      const msg = args.map(arg => {
+        if (typeof arg === 'object' && arg !== null) {
+          try { return JSON.stringify(arg, null, 2); } catch (e) { return String(arg); }
+        }
+        return String(arg);
+      }).join(' ');
+
+      row.innerHTML = '<span class="console-time">[' + time + ']</span><span class="console-val">' + 
+        msg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+      container.appendChild(row);
+    }
+
+    console.log = (...args) => addLog('log', ...args);
+    console.info = (...args) => addLog('info', ...args);
+    console.warn = (...args) => addLog('warn', ...args);
+    console.error = (...args) => addLog('error', ...args);
+
+    window.onerror = function(msg, src, lineno) {
+      addLog('error', 'Runtime Error: ' + msg + ' (Line ' + lineno + ')');
+      return true;
+    };
+
+    try {
+      ${rawCode}
+      
+      if (logCount === 0) {
+        const sum = document.getElementById('summary');
+        sum.innerHTML = '<div class="summary-box">' +
+          '<div style="color: #10b981; font-weight: bold; margin-bottom: 4px;">✓ การทำงานสำเร็จสมบูรณ์ (Script Evaluated Successfully)</div>' +
+          '<div>โครงสร้างและฟังก์ชันทั้งหมดโหลดเข้าหน่วยความจำเรียบร้อย ไร้ข้อผิดพลาดทางไวยากรณ์ (Syntax Check Passed)</div>' +
+          '<div style="margin-top: 6px; color: #94a3b8; font-size: 11px;">(สามารถเพิ่มคำสั่ง <code>console.log(...)</code> ในโค้ดเพื่อพิมพ์ตัวแปรหรือผลลัพธ์การคำนวณ)</div>' +
+          '</div>';
+      }
+    } catch (e) {
+      addLog('error', 'Error: ' + (e && e.message ? e.message : String(e)));
+    }
+  </script>
+</body>
+</html>`;
 }
 
 function LessonResultViewer({
   courseId,
   lessonId,
   code,
+  executionCount = 0,
   iframeRef,
 }: LessonResultViewerProps) {
   const [activeSubTab, setActiveSubTab] = useState<"table" | "terminal" | "plan">("table");
+  const [localExecution, setLocalExecution] = useState(0);
 
   // Serial Monitor state (IoT)
   const [baudRate, setBaudRate] = useState("115200");
@@ -44,6 +215,14 @@ function LessonResultViewer({
   // Mobile Simulator state (Flutter)
   const [mobileTab, setMobileTab] = useState<"home" | "schedule" | "grades">("home");
   const [cardToggled, setCardToggled] = useState(false);
+  const [showHotReloadNotice, setShowHotReloadNotice] = useState(false);
+
+  // Sync execution triggers from parent
+  useEffect(() => {
+    if (executionCount > 0) {
+      setLocalExecution((prev) => prev + 1);
+    }
+  }, [executionCount]);
 
   // Initialize simulated IoT logs when code changes
   useEffect(() => {
@@ -62,6 +241,30 @@ function LessonResultViewer({
       ]);
     }
   }, [courseId, lessonId]);
+
+  // React to Run trigger for IoT
+  useEffect(() => {
+    if (courseId === "iot" && executionCount > 0) {
+      const now = new Date().toLocaleTimeString("th-TH");
+      setSerialLogs((prev) => [
+        ...prev,
+        `[${now}.000] [UPLOAD] Uploading sketch to ESP32 (Flash: 4MB)... OK (100%)`,
+        `[${now}.120] [SYSTEM] Resetting target CPU... Running sketch!`,
+        ...(code.includes("WiFi") ? [`[${now}.350] [WiFi] Connected to AP with IP: 192.168.1.185`] : []),
+        ...(code.includes("MQTT") ? [`[${now}.580] [MQTT] Connected to broker.emqx.io:1883`] : []),
+        ...(code.includes("DHT") || code.includes("dht") ? [`[${now}.820] [DHT22] Telemetry -> Temp: 28.5 °C | Humidity: 64.0% RH`] : []),
+      ]);
+    }
+  }, [executionCount, courseId]);
+
+  // React to Run trigger for Mobile
+  useEffect(() => {
+    if (courseId === "mobile" && executionCount > 0) {
+      setShowHotReloadNotice(true);
+      const timer = setTimeout(() => setShowHotReloadNotice(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [executionCount, courseId]);
 
   const handleSerialSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,22 +293,40 @@ function LessonResultViewer({
     setSerialInput("");
   };
 
-  // 1. WEB DEV / GAME DEV: Iframe execution or HTML preview
+  const previewHtml = useMemo(() => {
+    return buildWebPreviewHtml(code, courseId);
+  }, [code, courseId, localExecution]);
+
+  // 1. WEB DEV / GAME DEV: Live Iframe execution with srcDoc
   if (courseId === "webdev" || courseId === "gamedev") {
     return (
       <div className="w-full h-full flex flex-col bg-white dark:bg-slate-950">
-        <div className="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center justify-between text-xs text-slate-400">
+        <div className="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-white font-mono font-bold">
               {courseId === "gamedev" ? "HTML5 2D Canvas Viewport (60 FPS)" : "Live Web Browser Preview"}
             </span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] hidden sm:inline-block">
+              HTML5 / CSS / JS Live Sandbox
+            </span>
           </div>
-          <span className="text-[11px] text-slate-400">Sandbox: allow-scripts</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setLocalExecution((prev) => prev + 1)}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white transition-colors border border-slate-700 text-[11px] cursor-pointer"
+              title="รีเฟรชผลลัพธ์การรัน"
+            >
+              <RotateCcw className="w-3 h-3 text-emerald-400" />
+              <span>รีรันผลลัพธ์</span>
+            </button>
+            <span className="text-[11px] text-slate-400 hidden sm:inline">Sandbox: allow-scripts</span>
+          </div>
         </div>
         <div className="flex-grow relative bg-slate-950">
           <iframe
-            ref={iframeRef as any}
+            key={`${lessonId}-${localExecution}`}
+            srcDoc={previewHtml}
             className="w-full h-full border-none bg-white"
             title="Output Preview"
             sandbox="allow-scripts allow-modals"
@@ -451,6 +672,13 @@ function LessonResultViewer({
               IT
             </div>
           </div>
+
+          {/* Hot Reload Flash Toast */}
+          {showHotReloadNotice && (
+            <div className="absolute top-14 left-4 right-4 z-50 bg-emerald-600 text-white font-bold text-xs py-2 px-3 rounded-xl shadow-xl flex items-center justify-center gap-2 animate-bounce">
+              <span>⚡ Flutter Hot Reloaded in 210ms</span>
+            </div>
+          )}
 
           {/* App Body Content */}
           <div className="flex-grow p-4 overflow-y-auto space-y-3 bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-xs">

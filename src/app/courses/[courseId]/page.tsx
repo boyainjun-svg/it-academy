@@ -20,11 +20,72 @@ import {
 import { getLessonProgress, getUser } from "@/lib/progress";
 import AuthRequiredModal from "@/components/auth/AuthRequiredModal";
 
+const courseHeroThemes: Record<
+  string,
+  {
+    gradientClass: string;
+    styleBackground: string;
+    accentColor: string;
+    badgeBorder: string;
+  }
+> = {
+  iot: {
+    gradientClass: "from-emerald-700 via-teal-800 to-slate-900 dark:from-emerald-950 dark:via-teal-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #047857 0%, #0f766e 45%, #0f172a 100%)",
+    accentColor: "text-emerald-400",
+    badgeBorder: "border-emerald-400/30 bg-emerald-950/50 text-emerald-100",
+  },
+  network: {
+    gradientClass: "from-blue-700 via-indigo-800 to-slate-900 dark:from-blue-950 dark:via-indigo-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #1d4ed8 0%, #3730a3 45%, #0f172a 100%)",
+    accentColor: "text-blue-400",
+    badgeBorder: "border-blue-400/30 bg-blue-950/50 text-blue-100",
+  },
+  webdev: {
+    gradientClass: "from-amber-600 via-orange-700 to-slate-900 dark:from-amber-950 dark:via-orange-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #d97706 0%, #c2410c 45%, #0f172a 100%)",
+    accentColor: "text-amber-400",
+    badgeBorder: "border-amber-400/30 bg-amber-950/50 text-amber-100",
+  },
+  database: {
+    gradientClass: "from-purple-700 via-violet-800 to-slate-900 dark:from-purple-950 dark:via-violet-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #7e22ce 0%, #5b21b6 45%, #0f172a 100%)",
+    accentColor: "text-purple-400",
+    badgeBorder: "border-purple-400/30 bg-purple-950/50 text-purple-100",
+  },
+  mobile: {
+    gradientClass: "from-cyan-700 via-teal-800 to-slate-900 dark:from-cyan-950 dark:via-teal-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #0e7490 0%, #115e59 45%, #0f172a 100%)",
+    accentColor: "text-cyan-400",
+    badgeBorder: "border-cyan-400/30 bg-cyan-950/50 text-cyan-100",
+  },
+  gamedev: {
+    gradientClass: "from-rose-700 via-red-800 to-slate-900 dark:from-rose-950 dark:via-red-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #be123c 0%, #991b1b 45%, #0f172a 100%)",
+    accentColor: "text-rose-400",
+    badgeBorder: "border-rose-400/30 bg-rose-950/50 text-rose-100",
+  },
+  cybersecurity: {
+    gradientClass: "from-fuchsia-700 via-pink-800 to-slate-900 dark:from-fuchsia-950 dark:via-pink-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #a21caf 0%, #9d174d 45%, #0f172a 100%)",
+    accentColor: "text-fuchsia-400",
+    badgeBorder: "border-fuchsia-400/30 bg-fuchsia-950/50 text-fuchsia-100",
+  },
+};
+
+const defaultTheme = {
+  gradientClass: "from-slate-800 via-slate-900 to-dark-950",
+  styleBackground: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+  accentColor: "text-primary-400",
+  badgeBorder: "border-slate-700 bg-slate-900/60 text-slate-200",
+};
+
 export default function CourseDetailPage() {
   const params = useParams();
   const router = useRouter();
   const courseId = params.courseId as string;
   const course = getCourse(courseId);
+  const theme = courseHeroThemes[courseId] || defaultTheme;
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<string>("ทั้งหมด");
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -86,34 +147,36 @@ export default function CourseDetailPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-dark-950 transition-colors duration-300">
       {/* Hero Section */}
       <div
-        className={`pt-24 pb-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br ${course.gradient} text-white`}
+        className={`relative pt-24 pb-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br ${theme.gradientClass} text-white shadow-xl overflow-hidden`}
+        style={{ background: theme.styleBackground }}
       >
-        <div className="max-w-5xl mx-auto mt-8">
+        <div className="absolute inset-0 bg-black/20 dark:bg-black/40 pointer-events-none" />
+        <div className="relative max-w-5xl mx-auto mt-8">
           <Link
             href="/courses"
-            className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors font-medium text-sm"
+            className="inline-flex items-center text-white/90 hover:text-white mb-6 transition-all font-semibold text-sm bg-black/25 hover:bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15"
           >
             <ChevronRight className="w-4 h-4 rotate-180 mr-1" />
             กลับไปหน้าหลักสูตรทั้งหมด
           </Link>
-          <div className="text-6xl mb-4">{course.icon}</div>
-          <h1 className="text-3xl md:text-5xl font-black mb-6 drop-shadow-md">
+          <div className="text-6xl mb-4 drop-shadow-lg">{course.icon}</div>
+          <h1 className="text-3xl md:text-5xl font-black mb-6 text-white drop-shadow-md tracking-tight">
             {course.title}
           </h1>
-          <p className="text-lg md:text-xl text-white/90 mb-8 max-w-4xl leading-relaxed">
+          <p className="text-base md:text-lg text-slate-100 mb-8 max-w-4xl leading-relaxed font-normal drop-shadow-sm">
             {course.longDescription}
           </p>
 
-          <div className="flex flex-wrap gap-4 mb-8 text-sm">
-            <div className="flex items-center bg-black/25 backdrop-blur-md px-4 py-2 rounded-xl">
+          <div className="flex flex-wrap gap-3 mb-8 text-sm">
+            <div className={`flex items-center backdrop-blur-md px-4 py-2 rounded-xl border ${theme.badgeBorder} shadow-sm font-medium`}>
               <BookOpen className="w-4 h-4 mr-2" />
               <span>{course.lessons.length} บทเรียนครอบคลุมทุกระดับ</span>
             </div>
-            <div className="flex items-center bg-black/25 backdrop-blur-md px-4 py-2 rounded-xl">
+            <div className={`flex items-center backdrop-blur-md px-4 py-2 rounded-xl border ${theme.badgeBorder} shadow-sm font-medium`}>
               <BarChart className="w-4 h-4 mr-2" />
               <span>3 ระดับ: เริ่มต้น / ปานกลาง / ขั้นสูง</span>
             </div>
-            <div className="flex items-center bg-black/25 backdrop-blur-md px-4 py-2 rounded-xl">
+            <div className={`flex items-center backdrop-blur-md px-4 py-2 rounded-xl border ${theme.badgeBorder} shadow-sm font-medium`}>
               <Clock className="w-4 h-4 mr-2" />
               <span>~{course.lessons.length * 35} นาที</span>
             </div>
@@ -121,7 +184,7 @@ export default function CourseDetailPage() {
 
           <button
             onClick={(e) => handleStartLearning(`/courses/${course.id}/${course.lessons[0]?.id}`, e)}
-            className="inline-flex items-center justify-center px-8 py-4 text-base font-bold bg-white text-slate-900 rounded-full hover:bg-slate-100 transition-all transform hover:scale-105 shadow-xl cursor-pointer"
+            className="inline-flex items-center justify-center px-8 py-4 text-base font-bold bg-white text-slate-900 rounded-full hover:bg-slate-100 transition-all transform hover:scale-105 shadow-2xl cursor-pointer"
           >
             <PlayCircle className="w-6 h-6 mr-2 text-primary-600" />
             {completedLessons.length > 0 ? "เรียนต่อจากที่ค้างไว้" : "เริ่มเรียนบทแรก"}
