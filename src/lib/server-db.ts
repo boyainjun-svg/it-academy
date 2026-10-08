@@ -23,6 +23,7 @@ export interface OtpRecord {
   code: string;
   expiresAt: number;
   createdAt: number;
+  attempts?: number;
 }
 
 export interface SessionRecord {
@@ -39,8 +40,37 @@ export interface DatabaseSchema {
 
 const DB_FILE_PATH = path.join(process.cwd(), "src", "data", "db.json");
 
-export function hashPassword(password: string, salt: string): string {
-  return crypto.pbkdf2Sync(password, salt, 1000, 64, "sha512").toString("hex");
+export function hashPassword(password: string, salt: string, iterations: number = 100000): string {
+  return crypto.pbkdf2Sync(password, salt, iterations, 64, "sha512").toString("hex");
+}
+
+/**
+ * Constant-time password verification to prevent side-channel timing attacks.
+ * Verifies with modern 100,000 iterations first, and backward-compatible with 1,000 iterations.
+ */
+export function verifyPasswordHash(password: string, salt: string, storedHash: string): boolean {
+  if (!password || !salt || !storedHash) return false;
+  try {
+    const storedBuf = Buffer.from(storedHash, "hex");
+
+    // 1. Try modern 100,000 iterations
+    const modernHash = hashPassword(password, salt, 100000);
+    const modernBuf = Buffer.from(modernHash, "hex");
+    if (storedBuf.length === modernBuf.length && crypto.timingSafeEqual(storedBuf, modernBuf)) {
+      return true;
+    }
+
+    // 2. Fallback to legacy 1,000 iterations
+    const legacyHash = hashPassword(password, salt, 1000);
+    const legacyBuf = Buffer.from(legacyHash, "hex");
+    if (storedBuf.length === legacyBuf.length && crypto.timingSafeEqual(storedBuf, legacyBuf)) {
+      return true;
+    }
+
+    return false;
+  } catch (err) {
+    return false;
+  }
 }
 
 export function generateSalt(): string {
@@ -228,6 +258,7 @@ export async function createUser(userData: {
     code: otpCode,
     expiresAt: Date.now() + 10 * 60 * 1000,
     createdAt: Date.now(),
+    attempts: 0,
   };
 
   const mongo = await getMongoDb();
@@ -253,6 +284,7 @@ export async function verifyUserOtp(
   code: string
 ): Promise<{ success: boolean; message: string; user?: DbUser; sessionToken?: string }> {
   const cleanEmail = email.trim().toLowerCase();
+  const cleanCode = code.trim();
   const mongo = await getMongoDb();
 
   if (mongo) {
@@ -264,15 +296,37 @@ export async function verifyUserOtp(
 
     const otpRecord = (await mongo.collection("otps").findOne({
       email: cleanEmail,
-      code: code.trim(),
     })) as unknown as OtpRecord | null;
 
     if (!otpRecord) {
-      return { success: false, message: "รหัส OTP 6 หลักไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง" };
+      return { success: false, message: "ไม่พบรหัส OTP หรือรหัสหมดอายุแล้ว กรุณากดขอรหัสใหม่" };
     }
 
     if (Date.now() > otpRecord.expiresAt) {
+      await mongo.collection("otps").deleteMany({ email: cleanEmail });
       return { success: false, message: "รหัส OTP หมดอายุแล้ว กรุณากดขอรหัสใหม่" };
+    }
+
+    const currentAttempts = (otpRecord.attempts || 0) + 1;
+
+    // Validate 6-digit OTP code
+    if (otpRecord.code !== cleanCode) {
+      if (currentAttempts >= 5) {
+        // Exceeded 5 failed attempts: delete OTP record to invalidate
+        await mongo.collection("otps").deleteMany({ email: cleanEmail });
+        return {
+          success: false,
+          message: "คุณกรอกรหัส OTP ไม่ถูกต้องเกิน 5 ครั้ง ระบบได้ยกเลิกรหัสนี้เพื่อความปลอดภัย กรุณากดขอรหัสใหม่",
+        };
+      }
+      await mongo.collection("otps").updateOne(
+        { email: cleanEmail },
+        { $set: { attempts: currentAttempts } }
+      );
+      return {
+        success: false,
+        message: `รหัส OTP ไม่ถูกต้อง (เหลือโอกาสกรอกอีก ${5 - currentAttempts} ครั้ง)`,
+      };
     }
 
     // Mark as verified
@@ -299,16 +353,34 @@ export async function verifyUserOtp(
     return { success: false, message: "ไม่พบบัญชีผู้ใช้นี้ในระบบ" };
   }
 
-  const otpRecord = db.otps.find(
-    (o) => o.email.toLowerCase() === cleanEmail && o.code === code.trim()
-  );
-
+  const otpRecord = db.otps.find((o) => o.email.toLowerCase() === cleanEmail);
   if (!otpRecord) {
-    return { success: false, message: "รหัส OTP 6 หลักไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง" };
+    return { success: false, message: "ไม่พบรหัส OTP หรือรหัสหมดอายุแล้ว กรุณากดขอรหัสใหม่" };
   }
 
   if (Date.now() > otpRecord.expiresAt) {
+    db.otps = db.otps.filter((o) => o.email.toLowerCase() !== cleanEmail);
+    saveDb(db);
     return { success: false, message: "รหัส OTP หมดอายุแล้ว กรุณากดขอรหัสใหม่" };
+  }
+
+  const currentAttempts = (otpRecord.attempts || 0) + 1;
+
+  if (otpRecord.code !== cleanCode) {
+    if (currentAttempts >= 5) {
+      db.otps = db.otps.filter((o) => o.email.toLowerCase() !== cleanEmail);
+      saveDb(db);
+      return {
+        success: false,
+        message: "คุณกรอกรหัส OTP ไม่ถูกต้องเกิน 5 ครั้ง ระบบได้ยกเลิกรหัสนี้เพื่อความปลอดภัย กรุณากดขอรหัสใหม่",
+      };
+    }
+    otpRecord.attempts = currentAttempts;
+    saveDb(db);
+    return {
+      success: false,
+      message: `รหัส OTP ไม่ถูกต้อง (เหลือโอกาสกรอกอีก ${5 - currentAttempts} ครั้ง)`,
+    };
   }
 
   user.isVerified = true;
@@ -336,6 +408,7 @@ export async function resendOtpForEmail(
     code: otpCode,
     expiresAt: Date.now() + 10 * 60 * 1000,
     createdAt: Date.now(),
+    attempts: 0,
   };
 
   const mongo = await getMongoDb();
@@ -384,8 +457,7 @@ export async function loginUser(
       return { success: false, message: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" };
     }
 
-    const hash = hashPassword(password, user.salt);
-    if (hash !== user.passwordHash) {
+    if (!verifyPasswordHash(password, user.salt, user.passwordHash)) {
       return { success: false, message: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" };
     }
 
@@ -424,8 +496,7 @@ export async function loginUser(
     return { success: false, message: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" };
   }
 
-  const hash = hashPassword(password, user.salt);
-  if (hash !== user.passwordHash) {
+  if (!verifyPasswordHash(password, user.salt, user.passwordHash)) {
     return { success: false, message: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" };
   }
 
@@ -857,14 +928,20 @@ export async function loginAdmin(
   const cleanUsername = username.trim().toLowerCase();
   const mongo = await getMongoDb();
 
-  // 1. Configurable master admin credential gate (supports ADMIN_USERNAME & ADMIN_PASSWORD env vars)
   const masterAdminUser = (process.env.ADMIN_USERNAME || "kitsvcadmin").toLowerCase().trim();
   const masterAdminPass = process.env.ADMIN_PASSWORD || "kitsvc2570";
 
-  if (
-    (cleanUsername === masterAdminUser || cleanUsername === "kitsvcadmin@itacademy.ac.th") &&
-    password === masterAdminPass
-  ) {
+  const userMatch = cleanUsername === masterAdminUser || cleanUsername === "kitsvcadmin@itacademy.ac.th";
+  let passMatch = false;
+  try {
+    const inputPassBuf = Buffer.from(hashPassword(password, "salt_kitsvcadmin"));
+    const masterPassBuf = Buffer.from(hashPassword(masterAdminPass, "salt_kitsvcadmin"));
+    passMatch = inputPassBuf.length === masterPassBuf.length && crypto.timingSafeEqual(inputPassBuf, masterPassBuf);
+  } catch (e) {
+    passMatch = false;
+  }
+
+  if (userMatch && passMatch) {
     let target: DbUser | null = null;
     const token = "admin_sess_" + crypto.randomUUID();
 
@@ -977,8 +1054,7 @@ export async function loginAdmin(
       return { success: false, message: "ชื่อผู้ใช้หรือรหัสผ่านแอดมินไม่ถูกต้อง" };
     }
 
-    const hash = hashPassword(password, admin.salt);
-    if (hash !== admin.passwordHash) {
+    if (!verifyPasswordHash(password, admin.salt, admin.passwordHash)) {
       return { success: false, message: "ชื่อผู้ใช้หรือรหัสผ่านแอดมินไม่ถูกต้อง" };
     }
 
@@ -1011,8 +1087,7 @@ export async function loginAdmin(
     return { success: false, message: "ชื่อผู้ใช้หรือรหัสผ่านแอดมินไม่ถูกต้อง" };
   }
 
-  const hash = hashPassword(password, admin.salt);
-  if (hash !== admin.passwordHash) {
+  if (!verifyPasswordHash(password, admin.salt, admin.passwordHash)) {
     return { success: false, message: "ชื่อผู้ใช้หรือรหัสผ่านแอดมินไม่ถูกต้อง" };
   }
 

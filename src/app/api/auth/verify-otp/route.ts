@@ -1,18 +1,41 @@
 import { verifyUserOtp } from "@/lib/server-db";
+import { checkRateLimit, resetRateLimit } from "@/lib/rate-limiter";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const { email, code } = body;
 
-    if (!email || !code) {
+    if (!email || !code || typeof email !== "string" || typeof code !== "string") {
       return Response.json(
-        { success: false, message: "กรุณาระบุอีเมลและรหัส OTP 6 หลัก" },
+        { success: false, message: "กรุณาระบุอีเมลและรหัส OTP 6 หลักให้ถูกต้อง" },
         { status: 400 }
       );
     }
 
-    const result = await verifyUserOtp(email, code);
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanCode = code.trim();
+
+    if (cleanCode.length !== 6 || !/^\d{6}$/.test(cleanCode)) {
+      return Response.json(
+        { success: false, message: "รหัส OTP ต้องเป็นตัวเลข 6 หลัก" },
+        { status: 400 }
+      );
+    }
+
+    // Rate Limiting: 10 attempts per 15 minutes
+    const limit = checkRateLimit(`verify-otp:${cleanEmail}`, 10, 15 * 60 * 1000);
+    if (!limit.allowed) {
+      return Response.json(
+        {
+          success: false,
+          message: `คุณกรอก OTP ถี่เกินไป กรุณารออีก ${limit.resetInSeconds} วินาทีแล้วลองใหม่`,
+        },
+        { status: 429, headers: { "Retry-After": String(limit.resetInSeconds) } }
+      );
+    }
+
+    const result = await verifyUserOtp(cleanEmail, cleanCode);
 
     if (!result.success) {
       return Response.json(
@@ -20,6 +43,9 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    // Reset rate limiter on successful verification
+    resetRateLimit(`verify-otp:${cleanEmail}`);
 
     const safeUser = result.user ? {
       id: result.user.id,
