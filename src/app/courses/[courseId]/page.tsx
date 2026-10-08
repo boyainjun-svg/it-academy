@@ -162,6 +162,12 @@ const courseHeroThemes: Record<
     accentColor: "text-emerald-400",
     badgeBorder: "border-emerald-400/30 bg-emerald-950/50 text-emerald-100",
   },
+  assembly: {
+    gradientClass: "from-slate-700 via-zinc-800 to-slate-950 dark:from-slate-950 dark:via-zinc-950 dark:to-dark-950",
+    styleBackground: "linear-gradient(135deg, #475569 0%, #334155 45%, #0f172a 100%)",
+    accentColor: "text-slate-300",
+    badgeBorder: "border-slate-400/30 bg-slate-900/60 text-slate-100",
+  },
 };
 
 const defaultTheme = {

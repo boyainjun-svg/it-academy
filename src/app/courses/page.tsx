@@ -30,6 +30,7 @@ const courseCardThemes: Record<string, string> = {
   dart: "linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #0369a1 100%)",
   matlab: "linear-gradient(135deg, #d97706 0%, #b45309 50%, #1e3a8a 100%)",
   shell: "linear-gradient(135deg, #047857 0%, #0f766e 50%, #0f172a 100%)",
+  assembly: "linear-gradient(135deg, #475569 0%, #334155 50%, #1e293b 100%)",
 };
 
 export default function CoursesPage() {

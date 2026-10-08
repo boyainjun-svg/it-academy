@@ -374,6 +374,17 @@ const languageMetadata: Record<
     compilerFlags: "set -euo pipefail (Defensive Shell Mode)",
     localInstallHint: "chmod +x script.sh && ./script.sh",
   },
+  assembly: {
+    name: "x86-64 NASM & GNU as",
+    runtime: "NASM 2.16.01 / GNU as 2.42 (ELF64)",
+    cli: "nasm -f elf64 main.asm -o main.o && ld main.o -o main && ./main",
+    icon: "⚙️",
+    version: "NASM version 2.16.01 (x86_64-pc-linux-gnu ELF64)",
+    memoryMetric: "Bare-Metal Registers: 0 KB Runtime Overhead | Stack: 2 MB",
+    engine: "Hardware CPU Microcode & Ring 3 System Call Dispatcher",
+    compilerFlags: "-f elf64 -g -F dwarf",
+    localInstallHint: "nasm -f elf64 prog.asm -o prog.o && ld prog.o -o prog && ./prog",
+  },
 };
 
 function extractLanguageStdout(rawCode: string, lang: string): string[] {
@@ -482,6 +493,14 @@ function extractLanguageStdout(rawCode: string, lang: string): string[] {
         let val = match[1].trim();
         val = val.replace(/^["']|["']$/g, "");
         if (val) extracted.push(val);
+      }
+    } else if (lang === "assembly") {
+      if (/(?:db|ascii|asciz)\s+["']([^"']+)["']/i.test(trimmed)) {
+        const match = trimmed.match(/(?:db|ascii|asciz)\s+["']([^"']+)["']/i);
+        if (match && match[1] && !match[1].startsWith("%")) extracted.push(match[1]);
+      } else if (/;\s*(?:Output|Print|Result|Stdout):\s*(.*)/i.test(trimmed)) {
+        const match = trimmed.match(/;\s*(?:Output|Print|Result|Stdout):\s*(.*)/i);
+        if (match && match[1]) extracted.push(match[1]);
       }
     }
   }
@@ -1389,7 +1408,8 @@ function LessonResultViewer({
     courseId === "scala" ||
     courseId === "dart" ||
     courseId === "matlab" ||
-    courseId === "shell"
+    courseId === "shell" ||
+    courseId === "assembly"
   ) {
     return (
       <LanguageRuntimeViewer

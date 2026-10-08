@@ -23,6 +23,7 @@ import { scalaCourse } from "./courses/scala";
 import { dartCourse } from "./courses/dart";
 import { matlabCourse } from "./courses/matlab";
 import { shellCourse } from "./courses/shell";
+import { assemblyCourse } from "./courses/assembly";
 
 export const coreCourses: Course[] = [
   iotCourse,
@@ -50,6 +51,7 @@ export const languageCourses: Course[] = [
   dartCourse,
   matlabCourse,
   shellCourse,
+  assemblyCourse,
 ];
 
 export const courses: Course[] = [

@@ -735,6 +735,7 @@ export default function LessonPage({
       dart: "dart",
       matlab: "matlab",
       shell: "shell",
+      assembly: "assembly",
       webdev: "html",
       gamedev: "javascript",
     };

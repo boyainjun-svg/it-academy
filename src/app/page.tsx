@@ -350,6 +350,16 @@ export default function Home() {
       gradient: "from-emerald-500 to-teal-700",
       iconBg: "bg-emerald-500/10",
       iconColor: "text-emerald-500"
+    },
+    {
+      id: "assembly",
+      title: "x86-64 & ARM Assembly Architecture",
+      description: "Registers, Memory, Stack Frame, Calling Conventions, POSIX Syscalls, SIMD/AVX และ Reverse Engineering",
+      lessons: 9,
+      emoji: "⚙️",
+      gradient: "from-slate-500 to-zinc-800",
+      iconBg: "bg-slate-500/10",
+      iconColor: "text-slate-400"
     }
   ];
 
